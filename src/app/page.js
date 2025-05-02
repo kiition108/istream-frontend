@@ -43,7 +43,7 @@ export default function VideoListPage() {
 
   useEffect(() => {
     fetchVideos(page)
-  }, [page, authLoading,fetchVideos])
+  }, [page, authLoading])
 
   const handleApproveToggle = async (videoId) => {
     try {
