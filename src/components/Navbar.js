@@ -84,7 +84,7 @@ export default function Navbar() {
               <Menu as="div" className="relative ml-3">
                 <div>
                   <MenuButton className="relative flex rounded-full bg-gray-800 text-sm">
-                    <Image
+                    <img
                       className="h-8 w-8 rounded-full"
                       src={user?.avatar || 'https://ui-avatars.com/api/?name=User&background=random'}
                       alt="User Avatar"

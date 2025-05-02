@@ -1,7 +1,15 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     // Add environment variables if necessary
-  
+    images: {
+      remotePatterns: [
+        
+        {
+          protocol: 'https',
+          hostname: 'res.cloudinary.com',
+        },
+      ],
+    },
   
   // Add rewrites to proxy API requests to the backend
   async rewrites() {

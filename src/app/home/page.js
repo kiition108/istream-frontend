@@ -6,7 +6,6 @@ import { useAuth } from '@/app/contexts/Authcontext';
 import Navbar from '@/components/Navbar';
 import { useRouter } from 'next/navigation';
 import withAuth from '@/utils/withAuth.js';
-import Image from 'next/image';
 
 function UserVideosPage() {
   const [videos, setVideos] = useState([]);
@@ -81,7 +80,7 @@ function UserVideosPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {videos.map((video) => (
   <div key={video._id} className="border rounded-lg shadow p-4 flex flex-col relative">
-    <Image
+    <img
       src={video.thumbnail}
       alt={video.title}
       className="w-full h-40 object-cover rounded mb-4 cursor-pointer"
