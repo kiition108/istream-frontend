@@ -17,7 +17,7 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await axios.get('http://localhost:8000/api/v1/users/current-user', {
+        const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/users/current-user`, {
           withCredentials: true,
         })
         setUser(res.data.data) // Set full user object, not just ID
@@ -33,7 +33,7 @@ export function AuthProvider({ children }) {
 
   const logout = async () => {
     try {
-      await axios.post('http://localhost:8000/api/v1/users/logout', {}, { withCredentials: true })
+      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/users/logout`, {}, { withCredentials: true })
       setUser(null)
       router.push('/login')
     } catch (err) {

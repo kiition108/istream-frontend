@@ -13,6 +13,8 @@ import {
 import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { VideoCameraIcon } from '@heroicons/react/24/solid'
 import { useAuth } from '@/app/contexts/Authcontext'
+import Image from 'next/image'
+import Link from 'next/link'
 
 const guestLinks = [
   { name: 'Dashboard', href: '/home' },
@@ -51,12 +53,12 @@ export default function Navbar() {
           {/* Logo + Links */}
           <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
             <div className="flex shrink-0 items-center">
-              <a href="/"><VideoCameraIcon className="w-6 h-6 text-white" /></a>
+              <Link href="/"><VideoCameraIcon className="w-6 h-6 text-white" /></Link>
             </div>
             <div className="hidden sm:ml-6 sm:block">
               <div className="flex space-x-4">
                 {linksToShow.map((item) => (
-                  <a
+                  <Link
                     key={item.name}
                     href={item.href}
                     className={classNames(
@@ -65,7 +67,7 @@ export default function Navbar() {
                     )}
                   >
                     {item.name}
-                  </a>
+                  </Link>
                 ))}
               </div>
             </div>
@@ -82,7 +84,7 @@ export default function Navbar() {
               <Menu as="div" className="relative ml-3">
                 <div>
                   <MenuButton className="relative flex rounded-full bg-gray-800 text-sm">
-                    <img
+                    <Image
                       className="h-8 w-8 rounded-full"
                       src={user?.avatar || 'https://ui-avatars.com/api/?name=User&background=random'}
                       alt="User Avatar"

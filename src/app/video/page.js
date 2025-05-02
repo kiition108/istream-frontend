@@ -85,7 +85,7 @@ import withAuth from '@/utils/withAuth'
     try {
       setLoading(true)
       setProgress(0)
-      await axios.post('http://localhost:8000/api/v1/video/videoUpload', formData, {
+      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/video/videoUpload`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         withCredentials: true,
         onUploadProgress: (event) => {

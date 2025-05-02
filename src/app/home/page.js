@@ -6,6 +6,7 @@ import { useAuth } from '@/app/contexts/Authcontext';
 import Navbar from '@/components/Navbar';
 import { useRouter } from 'next/navigation';
 import withAuth from '@/utils/withAuth.js';
+import Image from 'next/image';
 
 function UserVideosPage() {
   const [videos, setVideos] = useState([]);
@@ -17,7 +18,7 @@ function UserVideosPage() {
   const fetchUserVideos = async () => {
     try {
       setLoading(true);
-      const res = await axios.get('http://localhost:8000/api/v1/video/user', {
+      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/video/user`, {
         withCredentials: true,
       });
       setVideos(res.data.data);
@@ -44,7 +45,7 @@ function UserVideosPage() {
   const handleDelete = async (videoId) => {
     if (!confirm('Are you sure you want to delete this video?')) return;
     try {
-      await axios.delete(`http://localhost:8000/api/v1/video/${videoId}`, {
+      await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/video/${videoId}`, {
         withCredentials: true,
       });
       fetchUserVideos();
@@ -57,7 +58,7 @@ function UserVideosPage() {
   const handleTogglePrivacy = async (videoId) => {
     try {
       await axios.put(
-        `http://localhost:8000/api/v1/video/privacy/${videoId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/video/privacy/${videoId}`,
         {},
         { withCredentials: true }
       );
@@ -80,7 +81,7 @@ function UserVideosPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {videos.map((video) => (
   <div key={video._id} className="border rounded-lg shadow p-4 flex flex-col relative">
-    <img
+    <Image
       src={video.thumbnail}
       alt={video.title}
       className="w-full h-40 object-cover rounded mb-4 cursor-pointer"
@@ -149,7 +150,7 @@ function UserVideosPage() {
 
         {videos.length === 0 && !loading && (
           <p className="text-center text-gray-500 mt-6">
-            You haven't uploaded any videos yet.
+            You haven&apos;t uploaded any videos yet.
           </p>
         )}
       </div>
