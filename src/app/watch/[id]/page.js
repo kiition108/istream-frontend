@@ -18,7 +18,7 @@ import withAuth from '@/utils/withAuth';
     const fetchVideo = async () => {
       try {
         setLoading(true);
-        const { data } = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/video/${id}`);
+        const { data } = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/video/${id}`);
         setVideo(data.data);
         console.log(data.data)
         setError(null);

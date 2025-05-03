@@ -24,7 +24,7 @@ function EditVideoPage() {
   useEffect(() => {
     const fetchVideo = async () => {
       try {
-        const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/video/${id}`);
+        const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/video/${id}`);
         const video = res.data.data;
 
         if (video.owner !== user._id) {
@@ -57,7 +57,7 @@ function EditVideoPage() {
       setError('');
       setLoading(true);
 
-      await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/video/${id}`, formData, {
+      await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/video/${id}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         withCredentials: true,
         onUploadProgress: (progressEvent) => {

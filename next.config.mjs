@@ -16,7 +16,7 @@ const nextConfig = {
     return [
       {
         source: '/api/v1/:path*',
-        destination: 'http://localhost:8000/api/v1/:path*', // Forward API calls to the backend
+        destination: `${process.env.NEXT_PUBLIC_API_URL}/api/v1/:path*`, // Forward API calls to the backend
       },
     ];
   },

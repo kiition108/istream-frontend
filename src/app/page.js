@@ -19,7 +19,7 @@ export default function VideoListPage() {
   const fetchVideos = async (currentPage = 1) => {
     try {
       setLoading(true)
-      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/video/album?page=${currentPage}&limit=10`,
+      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/video/album?page=${currentPage}&limit=10`,
         {
           withCredentials: true
         })
@@ -34,6 +34,7 @@ export default function VideoListPage() {
       setHasNextPage(res.data.data.hasNextPage)
     } catch (err) {
       console.error(err)
+      router.push('/login')
       setError('Failed to load videos.')
     } finally {
       setLoading(false)
@@ -47,7 +48,7 @@ export default function VideoListPage() {
 
   const handleApproveToggle = async (videoId) => {
     try {
-      await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/video/approval/${videoId}`, {}, { withCredentials: true })
+      await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/video/approval/${videoId}`, {}, { withCredentials: true })
       fetchVideos(page)
     } catch (err) {
       console.error(err)

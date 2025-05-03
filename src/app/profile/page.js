@@ -21,7 +21,7 @@ export default function UserProfile() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/current-user`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/users/current-user`, {
           method: 'GET',
           credentials: 'include',
         })
@@ -54,7 +54,7 @@ export default function UserProfile() {
     formData.append(field, file)
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${field}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/users/${field}`, {
         method: 'PATCH',
         credentials: 'include',
         body: formData,
@@ -78,7 +78,7 @@ export default function UserProfile() {
 
   const saveField = async (field) => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/update-account`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/users/update-account`, {
         method: 'PATCH',
         credentials: 'include',
         headers: {

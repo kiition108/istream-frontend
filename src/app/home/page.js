@@ -17,7 +17,7 @@ function UserVideosPage() {
   const fetchUserVideos = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/video/user`, {
+      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/video/user`, {
         withCredentials: true,
       });
       setVideos(res.data.data);
@@ -44,7 +44,7 @@ function UserVideosPage() {
   const handleDelete = async (videoId) => {
     if (!confirm('Are you sure you want to delete this video?')) return;
     try {
-      await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/video/${videoId}`, {
+      await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/video/${videoId}`, {
         withCredentials: true,
       });
       fetchUserVideos();
@@ -57,7 +57,7 @@ function UserVideosPage() {
   const handleTogglePrivacy = async (videoId) => {
     try {
       await axios.put(
-        `${process.env.NEXT_PUBLIC_API_URL}/video/privacy/${videoId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/video/privacy/${videoId}`,
         {},
         { withCredentials: true }
       );

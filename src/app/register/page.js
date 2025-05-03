@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { ArrowUpIcon } from '@heroicons/react/24/outline';
+import { useRouter } from 'next/navigation';
 
 export default function Register() {
   const [form, setForm] = useState({
@@ -16,7 +17,7 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState(null);
-
+  const router = useRouter();
   const handleChange = (e) => {
     const { name, value, files } = e.target;
 
@@ -50,13 +51,14 @@ export default function Register() {
     formData.append('avatar', form.avatar);
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/register`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/users/register`, {
         method: 'POST',
         body: formData,
       });
 
       const data = await res.json();
       setMessage(data.message || 'Registration successful!');
+      router.push('/login')
     } catch (err) {
       console.error(err);
       setMessage('Failed to register');

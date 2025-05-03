@@ -2,16 +2,14 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '../contexts/Authcontext';
 import Link from 'next/link';
 
 export default function Login() {
   const [form, setForm] = useState({ email: '', password: '', remember: false });
   const [message, setMessage] = useState('');
-  const [messageType, setMessageType] = useState(''); // 'success' or 'error'
+  const [messageType, setMessageType] = useState('');
   const [loading, setLoading] = useState(false);
-  const { setUser } = useAuth();
-  const [showPassword, setShowPassword] = useState(false)
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
 
   const handleChange = (e) => {
@@ -27,7 +25,7 @@ export default function Login() {
     setMessageType('');
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/login`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/users/login`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -39,7 +37,6 @@ export default function Login() {
       if (res.ok) {
         setMessage(response.message || 'Login successful');
         setMessageType('success');
-        setUser(response.data.user);
         localStorage.setItem('token', response.data.accessToken);
         setTimeout(() => router.push('/'), 1000);
       } else {
@@ -61,44 +58,44 @@ export default function Login() {
         <h2 className="text-2xl font-bold text-center text-gray-800">Sign In to Your Account</h2>
 
         <form onSubmit={handleSubmit} className="space-y-5">
-        <div className="mb-4">
-  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-  <input
-    type="email"
-    id="email"
-    name="email"
-    placeholder="you@example.com"
-    value={form.email}
-    onChange={handleChange}
-    required
-    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-  />
-</div>
+          <div className="mb-4">
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              placeholder="you@example.com"
+              value={form.email}
+              onChange={handleChange}
+              required
+              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
 
-<div className="mb-4">
-  <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-  <div className="relative">
-    <input
-      type={showPassword ? 'text' : 'password'}
-      id="password"
-      name="password"
-      placeholder="Enter your password"
-      value={form.password}
-      onChange={handleChange}
-      required
-      className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
-    />
-    <button
-      type="button"
-      onClick={() => setShowPassword((prev) => !prev)}
-      className="absolute inset-y-0 right-3 flex items-center text-gray-500"
-      tabIndex={-1}
-      aria-label="Toggle password visibility"
-    >
-      {showPassword ? '🙈' : '👁️'}
-    </button>
-  </div>
-</div>
+          <div className="mb-4">
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                id="password"
+                name="password"
+                placeholder="Enter your password"
+                value={form.password}
+                onChange={handleChange}
+                required
+                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute inset-y-0 right-3 flex items-center text-gray-500"
+                tabIndex={-1}
+                aria-label="Toggle password visibility"
+              >
+                {showPassword ? '🙈' : '👁️'}
+              </button>
+            </div>
+          </div>
 
           <div className="flex items-center justify-between">
             <label className="inline-flex items-center">
@@ -112,12 +109,14 @@ export default function Login() {
               <span className="ml-2 text-sm text-gray-600">Remember me</span>
             </label>
           </div>
+
           <div className="text-sm text-center text-gray-600">
-          Don&apos;t have an account?{' '}
-          <Link href="/register" className="text-blue-600 hover:underline font-medium">
-            Register
-          </Link>
-        </div>
+            Don&apos;t have an account?{' '}
+            <Link href="/register" className="text-blue-600 hover:underline font-medium">
+              Register
+            </Link>
+          </div>
+
           <button
             type="submit"
             disabled={loading}
