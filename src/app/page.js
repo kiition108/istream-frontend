@@ -19,7 +19,7 @@ export default function VideoListPage() {
   const fetchVideos = async (currentPage = 1) => {
     try {
       setLoading(true)
-      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/video/album?page=${currentPage}&limit=10`,
+      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/video/album?page=${currentPage}&limit=10`,{},
         {
           withCredentials: true
         })

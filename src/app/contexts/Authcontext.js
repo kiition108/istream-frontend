@@ -33,7 +33,7 @@ export function AuthProvider({ children }) {
 
   const logout = async () => {
     try {
-      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/users/logout`, { withCredentials: true })
+      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/users/logout`,{}, { withCredentials: true })
       setUser(null)
       router.push('/login')
     } catch (err) {
