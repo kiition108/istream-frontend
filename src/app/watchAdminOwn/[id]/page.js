@@ -5,8 +5,9 @@ import { useParams } from 'next/navigation';
 import Navbar from '../../../components/Navbar'; // adjust path if needed
 import axios from 'axios';
 import { useAuth } from '@/app/contexts/Authcontext';
+import axiosInstance from '@/utils/axiosInstance';
 
- function WatchVideoPage() {
+ function WatchVideoAdminOwnerPage() {
   const { id } = useParams();
   const [video, setVideo] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -14,10 +15,15 @@ import { useAuth } from '@/app/contexts/Authcontext';
   const {user}= useAuth();
   useEffect(() => {
     if (!id) return;
+    
     const fetchVideo = async () => {
       try {
         setLoading(true);
-        const { data } = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/video/${id}`);
+        const { data } = await axiosInstance.get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/video/adminOwner/${id}`,
+          {
+            withCredentials: true
+          }
+        );
         setVideo(data.data);
         setError(null);
       } catch (err) {
@@ -70,4 +76,4 @@ import { useAuth } from '@/app/contexts/Authcontext';
     </>
   );
 }
-export default WatchVideoPage;
+export default WatchVideoAdminOwnerPage;

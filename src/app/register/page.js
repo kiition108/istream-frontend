@@ -18,6 +18,7 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState(null);
   const router = useRouter();
+  
   const handleChange = (e) => {
     const { name, value, files } = e.target;
 
@@ -58,7 +59,13 @@ export default function Register() {
 
       const data = await res.json();
       setMessage(data.message || 'Registration successful!');
-      router.push('/login')
+      const userId = data?.data?._id; // adjust this based on your API response structure
+
+      if (userId) {
+        router.push(`/verifyMe?userId=${userId}`);
+      } else {
+        setMessage('User ID missing in response');
+      }
     } catch (err) {
       console.error(err);
       setMessage('Failed to register');

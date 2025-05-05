@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import axios from 'axios';
 import { useAuth } from '@/app/contexts/Authcontext';
 import Navbar from '@/components/Navbar';
 import { useRouter } from 'next/navigation';
 import withAuth from '@/utils/withAuth.js';
+import axiosInstance from '@/utils/axiosInstance';
+
 
 function UserVideosPage() {
   const [videos, setVideos] = useState([]);
@@ -17,7 +18,7 @@ function UserVideosPage() {
   const fetchUserVideos = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/video/user`, {
+      const res = await axiosInstance.get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/video/user`, {
         withCredentials: true,
       });
       setVideos(res.data.data);
@@ -33,8 +34,13 @@ function UserVideosPage() {
     fetchUserVideos();
   }, []);
 
-  const handleView = (videoId) => {
-    router.push(`/watch/${videoId}`);
+  const handleView = (videoId,ownerId) => {
+    console.log("userid in video",videos[0]?.owner)
+    console.log("userid ",ownerId)
+    if(user?.role!=='admin' || ownerId!==user?._id){
+      router.push(`/watchAdminOwn/${videoId}`);
+    }
+    else router.push(`/watch/${videoId}`);
   };
 
   const handleEdit = (videoId) => {
@@ -44,7 +50,7 @@ function UserVideosPage() {
   const handleDelete = async (videoId) => {
     if (!confirm('Are you sure you want to delete this video?')) return;
     try {
-      await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/video/${videoId}`, {
+      await axiosInstance.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/video/${videoId}`, {
         withCredentials: true,
       });
       fetchUserVideos();
@@ -56,7 +62,7 @@ function UserVideosPage() {
 
   const handleTogglePrivacy = async (videoId) => {
     try {
-      await axios.put(
+      await axiosInstance.put(
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/video/privacy/${videoId}`,
         {},
         { withCredentials: true }
@@ -84,7 +90,7 @@ function UserVideosPage() {
       src={video.thumbnail}
       alt={video.title}
       className="w-full h-40 object-cover rounded mb-4 cursor-pointer"
-      onClick={() => handleView(video._id)}
+      onClick={() => handleView(video._id,video.owner)}
     />
 
     {/* Published Status Badge */}

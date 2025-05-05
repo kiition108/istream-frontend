@@ -1,6 +1,6 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import {
   Disclosure,
   DisclosureButton,
@@ -10,23 +10,10 @@ import {
   MenuItem,
   MenuItems,
 } from '@headlessui/react'
-import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { Bars3Icon, BellIcon } from '@heroicons/react/24/outline'
 import { VideoCameraIcon } from '@heroicons/react/24/solid'
 import { useAuth } from '@/app/contexts/Authcontext'
-import Image from 'next/image'
 import Link from 'next/link'
-
-const guestLinks = [
-  { name: 'Dashboard', href: '/home' },
-  { name: 'Upload Video', href: '/video' },
-  { name: 'Login', href: '/login' },
-  { name: 'Register', href: '/register' },
-]
-
-const authLinks = [
-  { name: 'Dashboard', href: '/home' },
-  { name: 'Upload Video', href: '/video' },
-]
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
@@ -34,9 +21,17 @@ function classNames(...classes) {
 
 export default function Navbar() {
   const router = useRouter()
+  const pathname = usePathname()
   const { user, isAuthenticated, logout } = useAuth()
 
-  const linksToShow = isAuthenticated ? authLinks : guestLinks
+  const baseLinks = [
+    { name: 'Dashboard', href: '/home' },
+    { name: 'Upload Video', href: '/video' },
+  ]
+
+  const linksToShow = isAuthenticated
+    ? [...baseLinks, ...(user?.role === 'admin' ? [{ name: 'Approve Videos', href: '/videoApproval' }] : [])]
+    : [...baseLinks, { name: 'Login', href: '/login' }, { name: 'Register', href: '/register' }]
 
   return (
     <Disclosure as="nav" className="bg-gray-800">
@@ -62,7 +57,9 @@ export default function Navbar() {
                     key={item.name}
                     href={item.href}
                     className={classNames(
-                      'text-gray-300 hover:bg-gray-700 hover:text-white',
+                      pathname === item.href
+                        ? 'bg-green-900 text-white'
+                        : 'text-gray-300 hover:bg-gray-700 hover:text-white',
                       'rounded-md px-3 py-2 text-sm font-medium'
                     )}
                   >
@@ -95,9 +92,6 @@ export default function Navbar() {
                   <MenuItem as="a" href="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                     Your Profile
                   </MenuItem>
-                  <MenuItem as="a" href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                    Settings
-                  </MenuItem>
                   <MenuItem
                     as="button"
                     onClick={logout}
@@ -120,7 +114,12 @@ export default function Navbar() {
               key={item.name}
               as="a"
               href={item.href}
-              className="block rounded-md px-3 py-2 text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white"
+              className={classNames(
+                pathname === item.href
+                  ? 'bg-gray-900 text-white'
+                  : 'text-gray-300 hover:bg-gray-700 hover:text-white',
+                'block rounded-md px-3 py-2 text-base font-medium'
+              )}
             >
               {item.name}
             </DisclosureButton>

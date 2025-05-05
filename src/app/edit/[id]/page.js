@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import axios from 'axios';
 import Navbar from '@/components/Navbar';
 import { useAuth } from '@/app/contexts/Authcontext';
 import withAuth from '@/utils/withAuth';
 import LoadingModal from '@/components/Loading';
+import axiosInstance from '@/utils/axiosInstance';
 
 function EditVideoPage() {
   const { id } = useParams();
@@ -24,7 +24,7 @@ function EditVideoPage() {
   useEffect(() => {
     const fetchVideo = async () => {
       try {
-        const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/video/${id}`);
+        const res = await axiosInstance.get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/video/${id}`);
         const video = res.data.data;
 
         if (video.owner !== user._id) {
@@ -57,7 +57,7 @@ function EditVideoPage() {
       setError('');
       setLoading(true);
 
-      await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/video/${id}`, formData, {
+      await axiosInstance.put(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/video/${id}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         withCredentials: true,
         onUploadProgress: (progressEvent) => {

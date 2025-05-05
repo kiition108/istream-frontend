@@ -1,104 +1,69 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useRef, useContext } from 'react'
 import { PencilIcon } from '@heroicons/react/24/outline'
-import Navbar from '../../components/Navbar.js'
+import Navbar from '../../components/Navbar'
+import { useAuth } from '@/app/contexts/Authcontext.js'
+import axiosInstance from '@/utils/axiosInstance'
 
 export default function UserProfile() {
-  const [user, setUser] = useState({
-    fullName: '',
-    username: '',
-    avatar: '',
-    coverImage: '',
-  })
-
+  const { user, setUser } = useAuth()
   const [editField, setEditField] = useState(null)
   const [message, setMessage] = useState('')
 
   const avatarInputRef = useRef(null)
   const coverInputRef = useRef(null)
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/users/current-user`, {
-          method: 'GET',
-          credentials: 'include',
-        })
-        const response = await res.json()
-        if (res.ok) {
-          setUser({
-            fullName: response.data.fullName,
-            username: response.data.username,
-            avatar: response.data.avatar,
-            coverImage: response.data.coverImage,
-          })
-        }
-      } catch (err) {
-        console.error('Error fetching user:', err)
-      }
-    }
-
-    checkAuth()
-  }, [])
+  const [localUser, setLocalUser] = useState({
+    fullName: user?.fullName || '',
+    username: user?.username || '',
+    avatar: user?.avatar || '',
+    coverImage: user?.coverImage || '',
+  })
 
   const handleChange = (e) => {
     const { name, value } = e.target
-    setUser((prev) => ({ ...prev, [name]: value }))
+    setLocalUser((prev) => ({ ...prev, [name]: value }))
   }
 
   const handleAutoImageUpload = async (e, field) => {
     const file = e.target.files[0]
     if (!file) return
+
     const formData = new FormData()
     formData.append(field, file)
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/users/${field}`, {
-        method: 'PATCH',
-        credentials: 'include',
-        body: formData,
-      })
-
-      const response = await res.json()
-      if (res.ok) {
-        setUser((prev) => ({
-          ...prev,
-          [field]: response.data[field],
-        }))
-        setMessage(`${field} updated successfully`)
-      } else {
-        setMessage(`Failed to update ${field}`)
-      }
+      const res = await axiosInstance.patch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/users/${field}`,
+        formData,
+        { withCredentials: true }
+      )
+      const updatedUser = { ...localUser, [field]: res.data.data[field] }
+      setLocalUser(updatedUser)
+      setUser(updatedUser)
+      setMessage(`${field} updated successfully`)
     } catch (err) {
       console.error(err)
-      setMessage(`Error updating ${field}`)
+      setMessage(`Failed to update ${field}`)
     }
   }
 
   const saveField = async (field) => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/users/update-account`, {
-        method: 'PATCH',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          [field]: user[field],
-        }),
-      })
-
-      const response = await res.json()
-      if (res.ok) {
-        setMessage(`${field} updated successfully`)
-      } else {
-        setMessage(`Failed to update ${field}`)
-      }
+      const res = await axiosInstance.patch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/users/update-account`,
+        { [field]: localUser[field] },
+        { withCredentials: true }
+      )
+      const updatedUser = { ...localUser, [field]: res.data.data[field] }
+      setLocalUser(updatedUser)
+      setUser(updatedUser)
+      setMessage(`${field} updated successfully`)
       setEditField(null)
     } catch (err) {
       console.error(err)
-      setMessage(`Error updating ${field}`)
+      setMessage(`Failed to update ${field}`)
     }
   }
 
@@ -109,7 +74,7 @@ export default function UserProfile() {
         {/* Cover Image */}
         <div className="relative">
           <img
-            src={user.coverImage || '/default-cover.jpg'}
+            src={localUser.coverImage || '/default-cover.jpg'}
             alt="Cover"
             className="w-full h-48 object-cover"
           />
@@ -132,7 +97,7 @@ export default function UserProfile() {
         <div className="flex flex-col items-center p-6">
           <div className="relative">
             <img
-              src={user.avatar || '/default-avatar.png'}
+              src={localUser.avatar || '/default-avatar.png'}
               alt="Profile"
               className="h-24 w-24 rounded-full border-4 border-white -mt-12 object-cover"
             />
@@ -157,7 +122,7 @@ export default function UserProfile() {
               <div className="flex flex-col items-center">
                 <input
                   name="fullName"
-                  value={user.fullName}
+                  value={localUser.fullName}
                   onChange={handleChange}
                   className="text-xl text-gray-600 text-center border-b"
                 />
@@ -170,7 +135,7 @@ export default function UserProfile() {
               </div>
             ) : (
               <div className="flex items-center gap-2 justify-center">
-                <h2 className="text-xl text-gray-600 font-semibold">{user.fullName}</h2>
+                <h2 className="text-xl text-gray-600 font-semibold">{localUser.fullName}</h2>
                 <button onClick={() => setEditField('fullName')}>
                   <PencilIcon className="w-4 h-4 text-gray-600" />
                 </button>
@@ -184,7 +149,7 @@ export default function UserProfile() {
               <div className="flex flex-col items-center">
                 <input
                   name="username"
-                  value={user.username}
+                  value={localUser.username}
                   onChange={handleChange}
                   className="text-gray-500 text-center border-b"
                 />
@@ -197,7 +162,7 @@ export default function UserProfile() {
               </div>
             ) : (
               <div className="flex items-center gap-2 justify-center">
-                <p className="text-gray-500">@{user.username}</p>
+                <p className="text-gray-500">@{localUser.username}</p>
                 <button onClick={() => setEditField('username')}>
                   <PencilIcon className="w-4 h-4 text-gray-600" />
                 </button>
@@ -205,7 +170,6 @@ export default function UserProfile() {
             )}
           </div>
 
-          {/* Message */}
           {message && <p className="mt-4 text-sm text-red-500">{message}</p>}
         </div>
       </div>

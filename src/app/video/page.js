@@ -1,13 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import axios from 'axios'
 import { useRouter } from 'next/navigation'
 import Navbar from '../../components/Navbar'
 import { ToastContainer, toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { VideoCameraIcon,SparklesIcon,ArrowUpIcon } from '@heroicons/react/24/solid'
 import withAuth from '@/utils/withAuth'
+import axiosInstance from '@/utils/axiosInstance'
 
  function UploadVideoPage() {
   const [videoFile, setVideoFile] = useState(null)
@@ -85,7 +85,7 @@ import withAuth from '@/utils/withAuth'
     try {
       setLoading(true)
       setProgress(0)
-      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/video/videoUpload`, formData, {
+      await axiosInstance.post(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/video/videoUpload`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         withCredentials: true,
         onUploadProgress: (event) => {

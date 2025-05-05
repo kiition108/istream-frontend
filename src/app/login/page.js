@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '../contexts/Authcontext';
 import Link from 'next/link';
 
 export default function Login() {
@@ -10,6 +11,7 @@ export default function Login() {
   const [messageType, setMessageType] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const {user,setUser}= useAuth();
   const router = useRouter();
 
   const handleChange = (e) => {
@@ -37,7 +39,7 @@ export default function Login() {
       if (res.ok) {
         setMessage(response.message || 'Login successful');
         setMessageType('success');
-        localStorage.setItem('token', response.data.accessToken);
+        setUser(response.data.user)
         setTimeout(() => router.push('/'), 1000);
       } else {
         setMessage(response.message || 'Login failed');
