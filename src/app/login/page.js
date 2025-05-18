@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../contexts/Authcontext';
 import Link from 'next/link';
+import { toast, ToastContainer } from 'react-toastify';
 
 export default function Login() {
   const [form, setForm] = useState({ email: '', password: '', remember: false });
@@ -37,16 +38,19 @@ export default function Login() {
       const response = await res.json();
 
       if (res.ok) {
+        toast.success(response.message || 'Login successful')
         setMessage(response.message || 'Login successful');
         setMessageType('success');
         setUser(response.data.user)
         setTimeout(() => router.push('/'), 1000);
       } else {
+        toast.error(response.message || 'Login failed')
         setMessage(response.message || 'Login failed');
         setMessageType('error');
       }
     } catch (err) {
       console.error(err);
+      toast.error('Something went wrong')
       setMessage('Something went wrong');
       setMessageType('error');
     } finally {
@@ -55,6 +59,9 @@ export default function Login() {
   };
 
   return (
+    <>
+    <ToastContainer/>
+    
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
       <div className="bg-white shadow-md rounded-xl w-full max-w-md p-8 space-y-6">
         <h2 className="text-2xl font-bold text-center text-gray-800">Sign In to Your Account</h2>
@@ -155,5 +162,6 @@ export default function Login() {
         )}
       </div>
     </div>
+    </>
   );
 }

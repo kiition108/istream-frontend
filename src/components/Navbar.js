@@ -11,9 +11,9 @@ import {
   MenuItems,
 } from '@headlessui/react'
 import { Bars3Icon, BellIcon } from '@heroicons/react/24/outline'
-import { VideoCameraIcon } from '@heroicons/react/24/solid'
 import { useAuth } from '@/app/contexts/Authcontext'
 import Link from 'next/link'
+import Image from 'next/image'
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
@@ -48,7 +48,12 @@ export default function Navbar() {
           {/* Logo + Links */}
           <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
             <div className="flex shrink-0 items-center">
-              <Link href="/"><VideoCameraIcon className="w-6 h-6 text-white" /></Link>
+              <Link href="/"><Image src="/android-chrome-512x512.png"        // Path in /public or full URL
+                                    alt="Logo" 
+                                    width={30} 
+                                    height={50} 
+                              />
+              </Link>
             </div>
             <div className="hidden sm:ml-6 sm:block">
               <div className="flex space-x-4">

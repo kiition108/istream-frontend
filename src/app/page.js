@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@/app/contexts/Authcontext'
 import Navbar from '@/components/Navbar'
 import axios from 'axios'
+import { toast, ToastContainer } from 'react-toastify'
 
 export default function VideoListPage() {
   const [videos, setVideos] = useState([])
@@ -14,7 +14,6 @@ export default function VideoListPage() {
   const [hasNextPage, setHasNextPage] = useState(false)
 
   const router = useRouter()
-  const { user, loading: authLoading } = useAuth()
 
   const fetchVideos = async (currentPage = 1) => {
     try {
@@ -27,6 +26,7 @@ export default function VideoListPage() {
       setHasNextPage(res.data.data.hasNextPage)
     } catch (err) {
       console.error(err)
+      toast.error('Failed to load videos.')
       setError('Failed to load videos.')
     } finally {
       setLoading(false)
@@ -35,22 +35,20 @@ export default function VideoListPage() {
 
   useEffect(() => {
     fetchVideos(page)
-  }, [page, authLoading])
+  }, [page])
 
   const handleView = (videoId) => {
-    if (user?.role=='admin') {
-      router.push(`/watchAdminOwn/${videoId}`)
-    }
-    else router.push(`/watch/${videoId}`)
+     router.push(`/watch/${videoId}`)
   }
 
-  if (authLoading) {
+  if (loading) {
     return <div className="p-6">Loading user info...</div>
   }
 
   return (
     <>
       <Navbar />
+      <ToastContainer/>
       <div className="max-w-6xl mx-auto p-6">
         <h2 className="text-3xl font-bold mb-6">All Videos</h2>
 
@@ -66,21 +64,7 @@ export default function VideoListPage() {
                 className="w-full h-40 object-cover rounded mb-4 cursor-pointer"
                 onClick={() => handleView(video._id)}
               />
-              {video.userInfo?.role=='admin' && (
-              <div className="absolute top-2 left-2 flex gap-2">
-                
-                {video.isApproved &&(
-                  <div className="relative group">
-                    <span className="px-2 py-1 text-xs rounded bg-yellow-500 text-black animate-pulse">
-                      Pending
-                    </span>
-                    <div className="absolute top-full mt-1 left-0 w-max bg-black text-white text-xs p-2 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
-                      Awaiting admin approval
-                    </div>
-                  </div>
-                )}
-              </div>
-              )}
+              
 
               <h3 className="text-xl font-semibold">{video.title}</h3>
               <p className="text-gray-600 mb-2 text-sm">{new Date(video.createdAt).toLocaleDateString()}</p>

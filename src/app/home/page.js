@@ -13,15 +13,17 @@ function UserVideosPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const { user } = useAuth();
+  const [page,setPage]=useState(1);
+  const [hasNextPage, setHasNextPage] = useState(false)
   const router = useRouter();
 
-  const fetchUserVideos = async () => {
+  const fetchUserVideos = async ({currentPage=1}) => {
     try {
       setLoading(true);
-      const res = await axiosInstance.get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/video/user`, {
+      const res = await axiosInstance.get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/video/user?page=${currentPage}&limit=10`, {
         withCredentials: true,
       });
-      setVideos(res.data.data);
+      setVideos(res.data.data.docs);
     } catch (err) {
       console.error(err);
       setError('Failed to fetch your videos.');
@@ -31,8 +33,8 @@ function UserVideosPage() {
   };
 
   useEffect(() => {
-    fetchUserVideos();
-  }, []);
+    fetchUserVideos(page);
+  }, [page]);
 
   const handleView = (videoId,ownerId) => {
     console.log("userid in video",videos[0]?.owner)
@@ -159,6 +161,25 @@ function UserVideosPage() {
           </p>
         )}
       </div>
+
+      <div className="flex justify-center mt-8 space-x-4">
+          {page > 1 && (
+            <button
+              onClick={() => setPage(page - 1)}
+              className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400"
+            >
+              Previous
+            </button>
+          )}
+          {hasNextPage && (
+            <button
+              onClick={() => setPage(page + 1)}
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            >
+              Next
+            </button>
+          )}
+        </div>
     </>
   );
 }

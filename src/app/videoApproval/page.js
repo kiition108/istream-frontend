@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/app/contexts/Authcontext'
 import Navbar from '@/components/Navbar'
 import axiosInstance from '@/utils/axiosInstance'
+import { toast, ToastContainer } from 'react-toastify'
 
 export default function VideoListPage() {
 const [videos, setVideos] = useState([])
@@ -35,6 +36,7 @@ let result = res.data.data.docs
   setHasNextPage(res.data.data.hasNextPage)
 } catch (err) {
   console.error(err)
+  toast.error('Failed to load videos.')
   setError('Failed to load videos.')
 } finally {
   setLoading(false)
@@ -55,7 +57,7 @@ await axiosInstance.put(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/video/approva
 fetchVideos(page)
 } catch (err) {
 console.error(err)
-alert('Failed to toggle approval')
+toast.error('Failed to toggle approval')
 }
 }
 
@@ -73,6 +75,7 @@ if (authLoading) return <div className="p-6">Loading...</div>
 return (
  <> 
 <Navbar/> 
+<ToastContainer/>
 <div className="max-w-6xl mx-auto p-6"> <h2 className="text-3xl font-bold mb-6">All Videos</h2>
 
     {loading && <p>Loading videos...</p>}

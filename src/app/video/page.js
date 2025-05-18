@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import Navbar from '../../components/Navbar'
 import { ToastContainer, toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
-import { VideoCameraIcon,SparklesIcon,ArrowUpIcon } from '@heroicons/react/24/solid'
+import { VideoCameraIcon,SparklesIcon,PaperClipIcon } from '@heroicons/react/24/solid'
 import withAuth from '@/utils/withAuth'
 import axiosInstance from '@/utils/axiosInstance'
 
@@ -126,7 +126,7 @@ import axiosInstance from '@/utils/axiosInstance'
           <div>
             <label className="block mb-1 font-medium">Video File (max 2 mins, 100MB)</label>
             <label htmlFor="videoUpload" className="cursor-pointer px-4 py-2 bg-black-200 border rounded hover:bg-red-300 inline-block">
-            <ArrowUpIcon className="w-6 h-6 text-gray"/><VideoCameraIcon className="w-6 h-6 text-yellow"/>
+            <PaperClipIcon className="w-6 h-6 text-gray"/><VideoCameraIcon className="w-6 h-6 text-yellow"/>
             </label>
             <input
               id="videoUpload"
@@ -143,7 +143,7 @@ import axiosInstance from '@/utils/axiosInstance'
           <div>
             <label className="block mb-1 font-medium">Thumbnail (max 5MB)</label>
             <label htmlFor="thumbnailUpload" className="cursor-pointer px-4 py-2 bg-black-200 border rounded hover:bg-red-300 inline-block">
-            <ArrowUpIcon className="w-6 h-6 text-gray"/><SparklesIcon className="w-6 h-6 text-gray"/>
+            <PaperClipIcon className="w-6 h-6 text-gray"/><SparklesIcon className="w-6 h-6 text-gray"/>
             </label>
             <input
               id="thumbnailUpload"
