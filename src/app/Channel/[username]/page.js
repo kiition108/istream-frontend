@@ -45,7 +45,9 @@ export default function ChannelHeader() {
       console.error('Failed to toggle subscription', err)
     }
   }
-
+  const handleView = (videoId) => {
+     router.push(`/watch/${videoId}`)
+  }
   
 
   if (!channel) return <p>Loading...</p>
