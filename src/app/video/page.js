@@ -105,7 +105,6 @@ import axiosInstance from '@/utils/axiosInstance'
   return (
     <>
       <Navbar />
-      <ToastContainer />
       <div className="max-w-2xl mx-auto p-6">
         <h2 className="text-2xl font-bold mb-4">Upload New Video</h2>
         <form onSubmit={handleSubmit} className="space-y-4">

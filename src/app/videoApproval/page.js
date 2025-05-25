@@ -75,7 +75,6 @@ if (authLoading) return <div className="p-6">Loading...</div>
 return (
  <> 
 <Navbar/> 
-<ToastContainer/>
 <div className="max-w-6xl mx-auto p-6"> <h2 className="text-3xl font-bold mb-6">All Videos</h2>
 
     {loading && <p>Loading videos...</p>}

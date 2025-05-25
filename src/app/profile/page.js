@@ -108,7 +108,6 @@ export default function UserProfile() {
   return (
     <>
       <Navbar />
-      <ToastContainer/>
       <div className="max-w-3xl mx-auto mt-10 bg-white rounded-xl shadow-md overflow-hidden">
         {/* Cover Image */}
         <div className="relative">

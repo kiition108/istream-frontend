@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import axios from 'axios'
 import { toast } from 'react-toastify'
@@ -16,6 +16,7 @@ export default function ChannelHeader() {
   const [videos, setVideos]= useState([]);
   const [page, setPage] = useState(1)
   const {user,loading}=useAuth()
+  const router= useRouter()
 
   useEffect(() => {
     const fetchChannel = async (currentPage = 1) => {

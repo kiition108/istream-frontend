@@ -61,7 +61,6 @@ export default function Login() {
   return (
     <>
     <ToastContainer/>
-    
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
       <div className="bg-white shadow-md rounded-xl w-full max-w-md p-8 space-y-6">
         <h2 className="text-2xl font-bold text-center text-gray-800">Sign In to Your Account</h2>
