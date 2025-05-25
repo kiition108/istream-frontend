@@ -117,17 +117,17 @@ function UserVideosPage() {
 )}
 
 
-    <h3 className="text-xl font-semibold">{video.title}</h3>
-    <p className="text-gray-600 text-sm mb-1">
+    <h3 className="text-xl font-semibold" onClick={() => handleView(video._id,video.owner)}>{video.title}</h3>
+    <p className="text-gray-600 text-sm mb-1" onClick={() => handleView(video._id,video.owner)}>
       {new Date(video.createdAt).toLocaleDateString()}
     </p>
-    <p className="text-gray-700 text-sm">{video.description?.slice(0, 100)}...</p>
+    <p className="text-gray-700 text-sm" onClick={() => handleView(video._id,video.owner)}>{video.description?.slice(0, 100)}...</p>
 
     {user?._id === video.owner && (
       <div className="mt-4 flex flex-wrap gap-2">
         <button
           onClick={() => handleTogglePrivacy(video._id)}
-          className={`px-3 py-1 rounded ${
+          className={`px-3 py-1 rounded cursor-pointer ${
             video.isPublished ? 'bg-yellow-500' : 'bg-green-600'
           } text-white`}
         >
@@ -136,14 +136,14 @@ function UserVideosPage() {
 
         <button
           onClick={() => handleEdit(video._id)}
-          className="bg-blue-500 px-3 py-1 text-white rounded"
+          className="bg-blue-500 px-3 py-1 text-white rounded cursor-pointer"
         >
           Edit
         </button>
 
         <button
           onClick={() => handleDelete(video._id)}
-          className="bg-red-500 px-3 py-1 text-white rounded"
+          className="bg-red-500 px-3 py-1 text-white rounded cursor-pointer"
         >
           Delete
         </button>
