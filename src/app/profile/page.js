@@ -21,6 +21,7 @@ export default function UserProfile() {
     username: user?.username || '',
     avatar: user?.avatar || '',
     coverImage: user?.coverImage || '',
+    description: user?.description || '',
   })
   const [passwords, setPasswords] = useState({
     oldPassword: '',
@@ -238,6 +239,32 @@ export default function UserProfile() {
               <div className="flex items-center gap-2 justify-center">
                 <p className="text-gray-500">@{localUser.email}</p>
                 <button onClick={() => setEditField('email')}>
+                  <PencilIcon className="w-4 h-4 text-gray-600" />
+                </button>
+              </div>
+            )}
+          </div>
+          {/* Description */}
+          <div className="mt-4 text-center">
+            {editField === 'description' ? (
+              <div className="flex flex-col items-center">
+                <input
+                  name="description"
+                  value={localUser.description}
+                  onChange={handleChange}
+                  className="text-xl text-gray-600 text-center border-b"
+                />
+                <button
+                  className="mt-1 text-sm text-white bg-green-600 px-2 rounded"
+                  onClick={() => saveField('description')}
+                >
+                  Save
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 justify-center">
+                <h2 className="text-xl text-gray-500">{localUser.description}</h2>
+                <button onClick={() => setEditField('description')}>
                   <PencilIcon className="w-4 h-4 text-gray-600" />
                 </button>
               </div>

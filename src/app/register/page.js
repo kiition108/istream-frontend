@@ -168,8 +168,9 @@ export default function Register() {
           </div>
 
           <div className="mb-4">
+            Already have an account?{' '}
             <Link href="/login" className="text-blue-600 text-sm hover:underline">
-              Already have an account? Login
+              Login
             </Link>
           </div>
 

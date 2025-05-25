@@ -8,14 +8,14 @@ import axios from 'axios'
 import { toast } from 'react-toastify'
 import axiosInstance from '@/utils/axiosInstance'
 import { useAuth } from '@/app/contexts/Authcontext'
+import DescriptionPreview from '@/components/DescriptionPreview'
 
 export default function ChannelHeader() {
   const {username}= useParams();
   const [channel, setChannel] = useState(null)
-  const [showMore, setShowMore] = useState(false)
   const [videos, setVideos]= useState([]);
   const [page, setPage] = useState(1)
-  const {user}=useAuth()
+  const {user,loading}=useAuth()
 
   useEffect(() => {
     const fetchChannel = async (currentPage = 1) => {
@@ -106,17 +106,7 @@ export default function ChannelHeader() {
       </div>
 
       {/* Description */}
-      {channel.description && (
-        <div className="mt-4 px-4 max-w-5xl mx-auto">
-          <button
-            onClick={() => setShowMore((prev) => !prev)}
-            className="text-blue-600 font-medium mb-1"
-          >
-            {showMore ? 'Hide Description' : 'Show Description'}
-          </button>
-          {showMore && <p className="text-gray-700 whitespace-pre-line">{channel.description}</p>}
-        </div>
-      )}
+      {channel.description && <DescriptionPreview text={channel.description} wordLimit={10}/>}
     </div>
 
     {/*Channel videos*/}
