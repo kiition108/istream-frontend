@@ -37,8 +37,6 @@ function UserVideosPage() {
   }, [page]);
 
   const handleView = (videoId,ownerId) => {
-    console.log("userid in video",videos[0]?.owner)
-    console.log("userid ",ownerId)
     if(user?.role!=='admin' || ownerId!==user?._id){
       router.push(`/watchAdminOwn/${videoId}`);
     }

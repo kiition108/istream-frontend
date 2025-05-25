@@ -23,6 +23,10 @@ export const metadata = {
       { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
     ],
     apple: '/apple-touch-icon.png',
+    chrome: [
+      { url: '/android-chrome-512x512.png', sizes: '512x512', type: 'image/png' },
+      { url: '/android-chrome-192x192.png', sizes: '192x192', type: 'image/png' }
+    ]
   },
   manifest: '/site.webmanifest',
 };
@@ -35,7 +39,7 @@ export default function RootLayout({ children }) {
       >
         <AuthProvider>
           {children}
-          <ToastContainer position="top-right" autoClose={3000} />
+          <ToastContainer position="top-right" autoClose={2500} />
         </AuthProvider>
       </body>
     </html>

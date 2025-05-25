@@ -20,7 +20,6 @@ function classNames(...classes) {
 }
 
 export default function Navbar() {
-  const router = useRouter()
   const pathname = usePathname()
   const { user, isAuthenticated, logout } = useAuth()
 
@@ -50,8 +49,8 @@ export default function Navbar() {
             <div className="flex shrink-0 items-center">
               <Link href="/"><Image src="/android-chrome-512x512.png"        // Path in /public or full URL
                                     alt="Logo" 
-                                    width={30} 
-                                    height={50} 
+                                    width={40} 
+                                    height={40} 
                               />
               </Link>
             </div>
@@ -96,6 +95,9 @@ export default function Navbar() {
                 <MenuItems className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5">
                   <MenuItem as="a" href="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                     Your Profile
+                  </MenuItem>
+                  <MenuItem as="a" href={`/Channel/${user.username}`} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                    Your Channel
                   </MenuItem>
                   <MenuItem
                     as="button"

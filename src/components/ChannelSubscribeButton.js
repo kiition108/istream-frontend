@@ -3,21 +3,24 @@ import axiosInstance from '@/utils/axiosInstance'
 import Image from 'next/image'
 import Link from 'next/link'
 import axios from 'axios'
+import { toast } from 'react-toastify'
+import { useAuth } from '@/app/contexts/Authcontext'
+import { useRouter } from 'next/navigation'
 
 export default function ChannelSubscribeButton({ username }) {
   const [channel, setChannel] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-
+  const {user}= useAuth()
+  const Router= useRouter()
   const fetchChannel = async () => {
     try {
       setLoading(true)
-      const res = await axios.get(`/api/v1/users/c/${username}`)
+      const res = await axiosInstance.get(`/api/v1/users/c/${username}`)
       setChannel(res.data.data)
       setError(null)
     } catch (err) {
-      console.error('Failed to load channel', err)
-      setError('Failed to load channel info')
+      setError('Login to see channel info')
     } finally {
       setLoading(false)
     }
@@ -30,25 +33,29 @@ export default function ChannelSubscribeButton({ username }) {
   const toggleSubscribe = async () => {
     try {
       if (channel.isSubscribed) {
-        await axiosInstance.delete(`/api/v1/subscriptions/${channel._id}`)
+        const res=await axiosInstance.delete(`/api/v1/subscriptions/${channel._id}`)
         setChannel(prev => ({
           ...prev,
           isSubscribed: false,
           subscribersCount: prev.subscribersCount - 1,
         }))
+        toast.success(res.data.message)
       } else {
-        await axiosInstance.post(`/api/v1/subscriptions/${channel._id}`)
+        const res=await axiosInstance.post(`/api/v1/subscriptions/${channel._id}`)
         setChannel(prev => ({
           ...prev,
           isSubscribed: true,
           subscribersCount: prev.subscribersCount + 1,
         }))
+        toast.success(res.data.message)
       }
     } catch (err) {
-      console.error('Failed to toggle subscription', err)
+      toast.error(err.response.data.message||"Something went wrong")
     }
   }
-
+  const channelRoute=()=>{
+    Router.push(`/Channel/${channel.username}`)
+  }
   if (loading) return <p className="text-center">Loading...</p>
   if (error) return <p className="text-center text-red-500">{error}</p>
 
@@ -62,6 +69,7 @@ export default function ChannelSubscribeButton({ username }) {
           alt="Channel Avatar"
           width={50}
           height={50}
+          style={{ height: "auto", width: "auto" }}
           className="rounded-full object-cover"
         />
         </Link>
@@ -74,6 +82,7 @@ export default function ChannelSubscribeButton({ username }) {
       </div>
 
       {/* Right: Subscribe Button */}
+      {user.username!==channel.username ? 
       <button
         onClick={toggleSubscribe}
         className={`px-5 py-2 text-sm font-semibold rounded-full transition duration-200 ${
@@ -82,8 +91,17 @@ export default function ChannelSubscribeButton({ username }) {
             : 'bg-red-600 text-white hover:bg-red-700'
         }`}
       >
-        {channel.isSubscribed ? 'Subscribed' : 'Subscribe'}
+        {channel.isSubscribed ? 'Unsubscribe' : 'Subscribe'}
       </button>
+      :
+      <button
+        onClick={channelRoute}
+        className="px-5 py-2 text-sm font-semibold rounded-full transition duration-200 cursor-pointer bg-yellow-600 text-white hover:bg-red-700"
+      >
+        Go to Channel
+      </button>  
+    }
+      
     </div>
   )
 }

@@ -5,36 +5,41 @@ import Image from 'next/image'
 import { useParams } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import axios from 'axios'
+import { toast } from 'react-toastify'
+import axiosInstance from '@/utils/axiosInstance'
+import { useAuth } from '@/app/contexts/Authcontext'
 
 export default function ChannelHeader() {
   const {username}= useParams();
   const [channel, setChannel] = useState(null)
   const [showMore, setShowMore] = useState(false)
   const [videos, setVideos]= useState([]);
+  const [page, setPage] = useState(1)
+  const {user}=useAuth()
 
   useEffect(() => {
-    const fetchChannel = async () => {
+    const fetchChannel = async (currentPage = 1) => {
       try {
-        const res = await axios.get(`/api/v1/users/c/${username}`)
+        const res = await axios.get(`/api/v1/users/c/${username}?page=${currentPage}&limit=10`)
         setChannel(res.data.data)
         setVideos(res.data.data.uploadedVideos)
       } catch (err) {
-        console.error('Failed to load channel', err)
+        toast.error('Failed to load channel info', err)
       }
     }
-    if (username) fetchChannel()
-  }, [username])
+    if (username) fetchChannel(page)
+  }, [username,page])
   const toggleSubscribe = async () => {
     try {
       if (channel.isSubscribed) {
-        await axios.delete(`/api/v1/subscriptions/${channel._id}`)
+        await axiosInstance.delete(`/api/v1/subscriptions/${channel._id}`)
         setChannel(prev => ({
           ...prev,
           isSubscribed: false,
           subscribersCount: prev.subscribersCount - 1,
         }))
       } else {
-        await axios.post(`/api/v1/subscriptions/${channel._id}`)
+        await axiosInstance.post(`/api/v1/subscriptions/${channel._id}`)
         setChannel(prev => ({
           ...prev,
           isSubscribed: true,
@@ -42,7 +47,7 @@ export default function ChannelHeader() {
         }))
       }
     } catch (err) {
-      console.error('Failed to toggle subscription', err)
+      toast.error(err.response.data.message||"Something went wrong")
     }
   }
   const handleView = (videoId) => {
@@ -63,6 +68,7 @@ export default function ChannelHeader() {
           alt="Cover"
           fill
           className="object-cover rounded-t-lg"
+          priority
         />
       </div>
 
@@ -86,7 +92,7 @@ export default function ChannelHeader() {
         </div>
         {/*Right side button to subscribe and unsubscribe*/}
         <div className="mt-4 md:mt-5">
-        <button
+        {user.username!==channel.username && <button
         onClick={toggleSubscribe}
         className={`px-5 py-2 text-sm font-semibold rounded-full transition duration-200 ${
           channel.isSubscribed
@@ -94,8 +100,8 @@ export default function ChannelHeader() {
             : 'bg-red-600 text-white hover:bg-red-700'
         }`}
       >
-        {channel.isSubscribed ? 'Subscribed' : 'Subscribe'}
-      </button>
+        {channel.isSubscribed ? 'Unsubscribe' : 'Subscribe'}
+      </button>}
         </div>
       </div>
 
@@ -138,8 +144,8 @@ export default function ChannelHeader() {
           <p className="text-center text-gray-500 mt-8">No videos found.</p>
         )}
 
-        {/* <div className="flex justify-center mt-8 space-x-4">
-          {page > 1 && (
+        <div className="flex justify-center mt-8 space-x-4">
+          {channel.hasPreviousPage && (
             <button
               onClick={() => setPage(page - 1)}
               className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400"
@@ -147,7 +153,7 @@ export default function ChannelHeader() {
               Previous
             </button>
           )}
-          {hasNextPage && (
+          {channel.hasNextPage && (
             <button
               onClick={() => setPage(page + 1)}
               className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
@@ -155,7 +161,7 @@ export default function ChannelHeader() {
               Next
             </button>
           )}
-        </div> */}
+        </div>
       </div>
     </>
   )

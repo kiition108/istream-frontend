@@ -25,7 +25,6 @@ export default function VideoListPage() {
       setVideos(result)
       setHasNextPage(res.data.data.hasNextPage)
     } catch (err) {
-      console.error(err)
       toast.error('Failed to load videos.')
       setError('Failed to load videos.')
     } finally {

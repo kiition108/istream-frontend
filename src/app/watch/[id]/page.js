@@ -6,12 +6,15 @@ import Navbar from '../../../components/Navbar'; // adjust path if needed
 import axios from 'axios';
 import { ToastContainer } from 'react-toastify';
 import ChannelSubscribeButton from '@/components/ChannelSubscribeButton';
+import { useAuth } from '@/app/contexts/Authcontext';
 
  function WatchVideoPage() {
   const { id } = useParams();
   const [video, setVideo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const {user}= useAuth();
+  
   useEffect(() => {
     if (!id) return;
     const fetchVideo = async () => {
@@ -65,7 +68,7 @@ import ChannelSubscribeButton from '@/components/ChannelSubscribeButton';
 
         <h1 className="text-2xl font-bold mb-2">{video.title}</h1>
         <p className="text-gray-700 mb-4">{video.description}</p>
-        <ChannelSubscribeButton username={video?.owner?.username} />
+        {user&&<ChannelSubscribeButton username={video?.owner?.username} />}
         
       </div>
     </>
