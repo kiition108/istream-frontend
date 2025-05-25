@@ -20,11 +20,12 @@ export default function ChannelHeader() {
   useEffect(() => {
     const fetchChannel = async (currentPage = 1) => {
       try {
-        const res = await axios.get(`/api/v1/users/c/${username}?page=${currentPage}&limit=10`)
+        const res = await axiosInstance.get(`/api/v1/users/c/${username}?page=${currentPage}&limit=10`)
         setChannel(res.data.data)
         setVideos(res.data.data.uploadedVideos)
       } catch (err) {
-        toast.error('Failed to load channel info', err)
+        console.log(err)
+        toast.error(err.response.data.message)
       }
     }
     if (username) fetchChannel(page)
@@ -88,6 +89,8 @@ export default function ChannelHeader() {
             <p className="text-sm text-gray-600">
               {channel.subscribersCount} subscribers • {channel.videosCount || 0} videos
             </p>
+            {/* Description */}
+            {channel.description && <DescriptionPreview text={channel.description} wordLimit={10}/>}
           </div>
         </div>
         {/*Right side button to subscribe and unsubscribe*/}
@@ -102,11 +105,11 @@ export default function ChannelHeader() {
       >
         {channel.isSubscribed ? 'Unsubscribe' : 'Subscribe'}
       </button>}
+      
         </div>
       </div>
 
-      {/* Description */}
-      {channel.description && <DescriptionPreview text={channel.description} wordLimit={10}/>}
+      
     </div>
 
     {/*Channel videos*/}
