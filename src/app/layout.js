@@ -39,7 +39,7 @@ export default function RootLayout({ children }) {
       >
         <AuthProvider>
           {children}
-          <ToastContainer position="top-right" autoClose={2500} />
+          <ToastContainer position="top-right" autoClose={2000} />
         </AuthProvider>
       </body>
     </html>

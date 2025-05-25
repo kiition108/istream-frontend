@@ -332,7 +332,7 @@ export default function UserProfile() {
               </div>
             </div>
 
-          {message && <p className="mt-4 text-sm text-red-500">{message}</p>}
+          {/* {message && <p className="mt-4 text-sm text-red-500">{message}</p>} */}
         </div>
       </div>
     </>
