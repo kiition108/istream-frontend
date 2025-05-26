@@ -236,7 +236,7 @@ export default function UserProfile() {
               </div>
             ) : (
               <div className="flex items-center gap-2 justify-center">
-                <p className="text-gray-500">@{localUser.email}</p>
+                <p className="text-gray-500">{localUser.email}</p>
                 <button onClick={() => setEditField('email')}>
                   <PencilIcon className="w-4 h-4 text-gray-600" />
                 </button>

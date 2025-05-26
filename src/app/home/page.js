@@ -6,6 +6,7 @@ import Navbar from '@/components/Navbar';
 import { useRouter } from 'next/navigation';
 import withAuth from '@/utils/withAuth.js';
 import axiosInstance from '@/utils/axiosInstance';
+import { toast } from 'react-toastify';
 
 
 function UserVideosPage() {
@@ -37,7 +38,7 @@ function UserVideosPage() {
   }, [page]);
 
   const handleView = (videoId,ownerId) => {
-    if(user?.role!=='admin' || ownerId!==user?._id){
+    if(user?.role=='admin' || ownerId==user?._id){
       router.push(`/watchAdminOwn/${videoId}`);
     }
     else router.push(`/watch/${videoId}`);
@@ -53,7 +54,7 @@ function UserVideosPage() {
       await axiosInstance.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/video/${videoId}`, {
         withCredentials: true,
       });
-      fetchUserVideos();
+      fetchUserVideos(page);
     } catch (err) {
       console.error(err);
       alert('Failed to delete video');
@@ -67,10 +68,9 @@ function UserVideosPage() {
         {},
         { withCredentials: true }
       );
-      fetchUserVideos();
+      fetchUserVideos(page);
     } catch (err) {
-      console.error(err);
-      alert('Failed to toggle privacy');
+      toast.error('Failed to toggle privacy');
     }
   };
 

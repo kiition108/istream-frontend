@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Navbar from '../../../components/Navbar'; // adjust path if needed
 import axios from 'axios';
-import { ToastContainer } from 'react-toastify';
+import { toast } from 'react-toastify';
 import ChannelSubscribeButton from '@/components/ChannelSubscribeButton';
 import { useAuth } from '@/app/contexts/Authcontext';
 
@@ -22,6 +22,7 @@ import { useAuth } from '@/app/contexts/Authcontext';
         setLoading(true);
         const { data } = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/video/${id}`);
         setVideo(data.data);
+        console.log(data);
         setError(null);
       } catch (err) {
         toast.error(err?.response?.data?.message || "Failed to load video.")
@@ -67,7 +68,7 @@ import { useAuth } from '@/app/contexts/Authcontext';
 
         <h1 className="text-2xl font-bold mb-2">{video.title}</h1>
         <p className="text-gray-700 mb-4">{video.description}</p>
-        {user&&<ChannelSubscribeButton username={video?.owner?.username} />}
+        <ChannelSubscribeButton username={video?.owner?.username} />
         
       </div>
     </>

@@ -16,7 +16,7 @@ export default function ChannelSubscribeButton({ username }) {
   const fetchChannel = async () => {
     try {
       setLoading(true)
-      const res = await axiosInstance.get(`/api/v1/users/c/${username}`)
+      const res = await axios.get(`/api/v1/users/c/${username}`)
       setChannel(res.data.data)
       setError(null)
     } catch (err) {
@@ -82,7 +82,7 @@ export default function ChannelSubscribeButton({ username }) {
       </div>
 
       {/* Right: Subscribe Button */}
-      {user.username!==channel.username ? 
+      {user?.username!==channel.username ? 
       <button
         onClick={toggleSubscribe}
         className={`px-5 py-2 text-sm font-semibold rounded-full transition duration-200 ${

@@ -96,7 +96,7 @@ export default function ChannelHeader() {
         </div>
         {/*Right side button to subscribe and unsubscribe*/}
         <div className="mt-4 md:mt-5">
-        {user.username!==channel.username && <button
+        {!loading && user?.username!==channel.username && <button
         onClick={toggleSubscribe}
         className={`px-5 py-2 text-sm font-semibold rounded-full transition duration-200 ${
           channel.isSubscribed

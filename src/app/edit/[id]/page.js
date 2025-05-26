@@ -24,7 +24,7 @@ function EditVideoPage() {
   useEffect(() => {
     const fetchVideo = async () => {
       try {
-        const res = await axiosInstance.get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/video/${id}`);
+        const res = await axiosInstance.get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/video/adminOwner/${id}`);
         const video = res.data.data;
         if (video.owner._id !== user._id) {
           setError('You are not authorized to edit this video.');
