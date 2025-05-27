@@ -20,7 +20,7 @@ const { user, loading: authLoading } = useAuth()
 const fetchVideos = async (currentPage = 1) => {
 try {
 setLoading(true)
-const res = await axiosInstance.get(`/api/v1/video/pendingVideos?page=${currentPage}&limit=10`,
+const res = await axiosInstance.get(`/api/v1/video/pendingVideos?page=${currentPage}&limit=9`,
 {
 withCredentials: true
 })

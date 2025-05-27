@@ -21,7 +21,7 @@ export default function ChannelHeader() {
   useEffect(() => {
     const fetchChannel = async (currentPage = 1) => {
       try {
-        const res = await axiosInstance.get(`/api/v1/users/c/${username}?page=${currentPage}&limit=10`)
+        const res = await axiosInstance.get(`/api/v1/users/c/${username}?page=${currentPage}&limit=9`)
         setChannel(res.data.data)
         setVideos(res.data.data.uploadedVideos)
       } catch (err) {

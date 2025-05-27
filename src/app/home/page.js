@@ -21,7 +21,7 @@ function UserVideosPage() {
   const fetchUserVideos = async ({currentPage=1}) => {
     try {
       setLoading(true);
-      const res = await axiosInstance.get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/video/user?page=${currentPage}&limit=10`, {
+      const res = await axiosInstance.get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/video/user?page=${currentPage}&limit=9`, {
         withCredentials: true,
       });
       setVideos(res.data.data.docs);
