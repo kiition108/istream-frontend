@@ -1,20 +1,18 @@
 'use client'
 
 import { createContext, useContext, useEffect, useState } from 'react'
-import axios from 'axios'
 import { useRouter } from 'next/navigation'
-import axiosInstance from '@/utils/axiosInstance'
+import authStorage from '@/utils/authStorage'
+import { userService } from '@/api'
+import Loader from '@/components/Loader'
 
 const AuthContext = createContext()
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const storedUser = localStorage.getItem('user')
-      return storedUser ? JSON.parse(storedUser) : null
-    }
-    return null
+    return authStorage.getUser();
   })
+
 
   const [loading, setLoading] = useState(true)
   const router = useRouter()
@@ -22,26 +20,31 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     const fetchUser = async () => {
-      try {
-        const res = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/v1/users/current-user`,
-          {
-            withCredentials: true,
-            validateStatus: (status) => status < 500,
-          }
-        )
+      // Skip auth check on login/register pages to prevent redirect loops
+      if (typeof window !== 'undefined') {
+        const pathname = window.location.pathname;
+        if (pathname === '/login' || pathname === '/register') {
+          setLoading(false);
+          return;
+        }
+      }
 
-        if (res.status === 200) {
-          setUser(res.data.data)
-          localStorage.setItem('user', JSON.stringify(res.data.data))
+      try {
+        const response = await userService.getCurrentUser();
+
+        if (response.success || response.statusCode === 200) {
+          setUser(response.data)
+          authStorage.setUser(response.data);
         } else {
           setUser(null)
-          localStorage.removeItem('user')
+          authStorage.removeUser();
+          authStorage.removeToken();
         }
       } catch (error) {
         console.error('Initial auth check failed:', error)
         setUser(null)
-        localStorage.removeItem('user')
+        authStorage.removeUser();
+        authStorage.removeToken();
       } finally {
         setLoading(false)
       }
@@ -52,22 +55,24 @@ export function AuthProvider({ children }) {
 
   const logout = async () => {
     try {
-      await axiosInstance.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/users/logout`,
-        {},
-        { withCredentials: true }
-      )
+      await userService.logout();
       setUser(null)
-      localStorage.removeItem('user')
+      authStorage.removeUser();
+      authStorage.removeToken();
       router.push('/')
     } catch (err) {
       console.error('Logout failed:', err)
+      // Force logout on client even if server fails?
+      setUser(null)
+      authStorage.removeUser();
+      authStorage.removeToken();
+      router.push('/')
     }
   }
 
   return (
     <AuthContext.Provider value={{ user, isAuthenticated, loading, setUser, logout }}>
-      {!loading && children}
+      {loading ? <Loader fullScreen /> : children}
     </AuthContext.Provider>
   )
 }

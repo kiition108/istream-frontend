@@ -1,100 +1,94 @@
-'use client'
-
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import Navbar from '@/components/Navbar'
-import axios from 'axios'
-import { toast, ToastContainer } from 'react-toastify'
+"use client"
+import { useEffect, useState } from 'react';
+import { videoService } from '@/api';
+import VideoCard from '@/components/VideoCard';
+import Loader from '@/components/Loader';
+import VideoCardSkeleton from '@/components/VideoCardSkeleton';
 
 export default function VideoListPage() {
-  const [videos, setVideos] = useState([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [page, setPage] = useState(1)
-  const [hasNextPage, setHasNextPage] = useState(false)
-
-  const router = useRouter()
-
-  const fetchVideos = async (currentPage = 1) => {
-    try {
-      setLoading(true)
-      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/video/album?page=${currentPage}&limit=9`, {
-        withCredentials: true,
-      })
-      const result = res.data.data.docs
-      setVideos(result)
-      setHasNextPage(res.data.data.hasNextPage)
-    } catch (err) {
-      toast.error('Failed to load videos.')
-      setError('Failed to load videos.')
-    } finally {
-      setLoading(false)
-    }
-  }
-
+  const [videos, setVideos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [page, setPage] = useState(1);
+  const [hasNextPage, setHasNextPage] = useState(false);
   useEffect(() => {
-    fetchVideos(page)
-  }, [page])
+    const fetchVideos = async () => {
+      try {
+        setLoading(true);
+        const data = await videoService.getAllVideos(page);
+        const result = data.data.docs;
+        setVideos(prev => page === 1 ? result : [...prev, ...result]);
+        setHasNextPage(data.data.hasNextPage);
+      } catch (err) {
+        console.error(err);
+        setError('Failed to load videos.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchVideos();
+  }, [page]);
 
-  const handleView = (videoId) => {
-     router.push(`/watch/${videoId}`)
-  }
-
-  if (loading) {
-    return <div className="p-6">Loading user info...</div>
-  }
-
-  return (
-    <>
-      <Navbar />
-      
-      <div className="max-w-6xl mx-auto p-6">
-        <h2 className="text-3xl font-bold mb-6">All Videos</h2>
-
-        {loading && <p>Loading videos...</p>}
-        {error && <p className="text-red-500">{error}</p>}
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {videos.map((video) => (
-            <div key={video._id} className="border rounded-lg shadow p-4 flex flex-col relative">
-              <img
-                src={video.thumbnail}
-                alt={video.title}
-                className="w-full h-40 object-cover rounded mb-4 cursor-pointer"
-                onClick={() => handleView(video._id)}
-              />
-              
-
-              <h3 className="text-xl font-semibold">{video.title}</h3>
-              <p className="text-gray-600 mb-2 text-sm">{new Date(video.createdAt).toLocaleDateString()}</p>
-              <p className="text-gray-700 flex-1">{video.description.substring(0, 80)}...</p>
-            </div>
+  if (loading && videos.length === 0) {
+    return (
+      <div className="pt-2">
+        {/* Category Pills Skeleton or same pills */}
+        <div className="flex gap-3 overflow-x-auto pb-4 mb-4 no-scrollbar">
+          {['All', 'Music', 'Gaming', 'Live', 'Computer Programming', 'Podcasts', 'News'].map((tag) => (
+            <button key={tag} className="px-3 py-1.5 bg-secondary hover:bg-border rounded-lg text-sm whitespace-nowrap transition-colors font-medium">
+              {tag}
+            </button>
           ))}
         </div>
 
-        {videos.length === 0 && !loading && (
-          <p className="text-center text-gray-500 mt-8">No videos found.</p>
-        )}
-
-        <div className="flex justify-center mt-8 space-x-4">
-          {page > 1 && (
-            <button
-              onClick={() => setPage(page - 1)}
-              className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400"
-            >
-              Previous
-            </button>
-          )}
-          {hasNextPage && (
-            <button
-              onClick={() => setPage(page + 1)}
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-            >
-              Next
-            </button>
-          )}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-4 gap-y-8">
+          {[...Array(10)].map((_, i) => (
+            <VideoCardSkeleton key={i} />
+          ))}
         </div>
       </div>
-    </>
-  )
+    );
+  }
+
+  return (
+    <div className="pt-2">
+
+      {/* Category Pills (Optional Phase 4 idea, placeholder for now) */}
+      <div className="flex gap-3 overflow-x-auto pb-4 mb-4 no-scrollbar">
+        {['All', 'Music', 'Gaming', 'Live', 'Computer Programming', 'Podcasts', 'News'].map((tag) => (
+          <button key={tag} className="px-3 py-1.5 bg-secondary hover:bg-border rounded-lg text-sm whitespace-nowrap transition-colors font-medium">
+            {tag}
+          </button>
+        ))}
+      </div>
+
+      {videos.length === 0 && !loading && !error && (
+        <div className="flex flex-col items-center justify-center min-h-[50vh] text-gray-400">
+          <p>No videos found</p>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-4 gap-y-8">
+        {videos.map((video) => (
+          <VideoCard key={video._id} video={video} />
+        ))}
+      </div>
+
+      {loading && (
+        <Loader />
+      )}
+
+      {/* Load More Trigger (can be replaced with IntersectionObserver later) */}
+      {hasNextPage && !loading && (
+        <div className="flex justify-center mt-8">
+          <button
+            onClick={() => setPage(prev => prev + 1)}
+            className="px-6 py-2 bg-secondary hover:bg-border rounded-full text-sm font-medium transition-colors"
+          >
+            Load More
+          </button>
+        </div>
+      )}
+    </div>
+  );
 }

@@ -1,15 +1,13 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import Navbar from '../../components/Navbar'
-import { ToastContainer, toast } from 'react-toastify'
-import 'react-toastify/dist/ReactToastify.css'
-import { VideoCameraIcon,SparklesIcon,PaperClipIcon } from '@heroicons/react/24/solid'
-import withAuth from '@/utils/withAuth'
-import axiosInstance from '@/utils/axiosInstance'
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { toast } from 'react-toastify';
+import { Upload, Image as ImageIcon, CheckCircle2 } from 'lucide-react';
+import withAuth from '@/utils/withAuth';
+import axiosInstance from '@/utils/axiosInstance';
 
- function UploadVideoPage() {
+function UploadVideoPage() {
   const [videoFile, setVideoFile] = useState(null)
   const [thumbnail, setThumbnail] = useState(null)
   const [title, setTitle] = useState('')
@@ -19,6 +17,7 @@ import axiosInstance from '@/utils/axiosInstance'
   const [progress, setProgress] = useState(0)
   const [videoPreviewUrl, setVideoPreviewUrl] = useState(null)
   const [thumbnailPreviewUrl, setThumbnailPreviewUrl] = useState(null)
+  const [isDragging, setIsDragging] = useState(false)
 
   const router = useRouter()
 
@@ -102,88 +101,150 @@ import axiosInstance from '@/utils/axiosInstance'
     }
   }
 
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDropVideo = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('video/')) {
+      validateAndSetVideo(file);
+    } else {
+      toast.error('Please drop a valid video file');
+    }
+  };
+
   return (
-    <>
-      <Navbar />
-      <div className="max-w-2xl mx-auto p-6">
-        <h2 className="text-2xl font-bold mb-4">Upload New Video</h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            type="text"
-            placeholder="Title"
-            className="w-full border p-2 rounded"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-          <textarea
-            placeholder="Description"
-            className="w-full border p-2 rounded"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
+    <div className="max-w-4xl mx-auto p-4 md:p-8">
+      <h1 className="text-2xl font-bold mb-6">Upload Video</h1>
 
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Left Column: Media Uploads */}
+        <div className="lg:col-span-1 space-y-6">
+          {/* Video Upload Area */}
           <div>
-            <label className="block mb-1 font-medium">Video File (max 2 mins, 100MB)</label>
-            <label htmlFor="videoUpload" className="cursor-pointer px-4 py-2 bg-black-200 border rounded hover:bg-red-300 inline-block">
-            <PaperClipIcon className="w-6 h-6 text-gray"/><VideoCameraIcon className="w-6 h-6 text-yellow"/>
-            </label>
-            <input
-              id="videoUpload"
-              type="file"
-              accept="video/*"
-              onChange={(e) => validateAndSetVideo(e.target.files?.[0])}
-              className="hidden"
-            />
-            {videoPreviewUrl && (
-              <video src={videoPreviewUrl} controls className="w-full h-48 rounded mt-2" />
-            )}
-          </div>
-
-          <div>
-            <label className="block mb-1 font-medium">Thumbnail (max 5MB)</label>
-            <label htmlFor="thumbnailUpload" className="cursor-pointer px-4 py-2 bg-black-200 border rounded hover:bg-red-300 inline-block">
-            <PaperClipIcon className="w-6 h-6 text-gray"/><SparklesIcon className="w-6 h-6 text-gray"/>
-            </label>
-            <input
-              id="thumbnailUpload"
-              type="file"
-              accept="image/*"
-              onChange={(e) => validateAndSetThumbnail(e.target.files?.[0])}
-              className="hidden"
-            />
-            {thumbnailPreviewUrl && (
-              <img src={thumbnailPreviewUrl} alt="Thumbnail preview" className="w-full h-32 object-cover rounded mt-2" />
-            )}
-          </div>
-
-          <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={isPublished}
-              onChange={(e) => setIsPublished(e.target.checked)}
-            />
-            Publish Now
-          </label>
-
-          {loading && (
-            <div className="w-full bg-gray-300 rounded-full h-4">
-              <div
-                className="bg-blue-600 h-4 rounded-full transition-all"
-                style={{ width: `${progress}%` }}
+            <label className="block text-sm font-medium mb-2 text-gray-300">Video File</label>
+            <div
+              className={`aspect-video rounded-xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-colors relative overflow-hidden ${isDragging ? 'border-accent bg-secondary/50' : 'border-border bg-secondary hover:bg-secondary/80'}`}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDropVideo}
+              onClick={() => document.getElementById('video-upload').click()}
+            >
+              {videoPreviewUrl ? (
+                <video src={videoPreviewUrl} className="w-full h-full object-cover" controls />
+              ) : (
+                <div className="text-center p-4">
+                  <div className="bg-background p-3 rounded-full inline-block mb-3">
+                    <Upload className="text-accent" size={24} />
+                  </div>
+                  <p className="text-sm font-medium">Select or drag video</p>
+                  <p className="text-xs text-gray-500 mt-1">MP4, WebM (Max 2min)</p>
+                </div>
+              )}
+              <input
+                id="video-upload"
+                type="file"
+                accept="video/*"
+                className="hidden"
+                onChange={(e) => validateAndSetVideo(e.target.files?.[0])}
               />
             </div>
-          )}
+          </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-          >
-            {loading ? 'Uploading...' : 'Upload Video'}
-          </button>
-        </form>
-      </div>
-    </>
+          {/* Thumbnail Upload Area */}
+          <div>
+            <label className="block text-sm font-medium mb-2 text-gray-300">Thumbnail</label>
+            <div
+              className="aspect-video rounded-xl border-2 border-dashed border-border bg-secondary hover:bg-secondary/80 flex flex-col items-center justify-center cursor-pointer transition-colors relative overflow-hidden"
+              onClick={() => document.getElementById('thumbnail-upload').click()}
+            >
+              {thumbnailPreviewUrl ? (
+                <img src={thumbnailPreviewUrl} alt="Thumbnail" className="w-full h-full object-cover" />
+              ) : (
+                <div className="text-center p-4">
+                  <ImageIcon className="text-gray-400 mx-auto mb-2" size={24} />
+                  <p className="text-xs text-gray-400">Upload Thumbnail</p>
+                </div>
+              )}
+              <input
+                id="thumbnail-upload"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => validateAndSetThumbnail(e.target.files?.[0])}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column: Details */}
+        <div className="lg:col-span-2 space-y-5">
+          <div className="space-y-1">
+            <label className="text-sm font-medium text-gray-300">Title</label>
+            <input
+              type="text"
+              placeholder="Add a title that describes your video"
+              className="w-full bg-input border border-border rounded-lg px-4 py-2.5 outline-none focus:border-blue-500 transition-colors placeholder:text-gray-600"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-sm font-medium text-gray-300">Description</label>
+            <textarea
+              placeholder="Tell viewers about your video"
+              rows={6}
+              className="w-full bg-input border border-border rounded-lg px-4 py-2.5 outline-none focus:border-blue-500 transition-colors placeholder:text-gray-600 resize-none"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+          </div>
+
+          {/* Privacy Toggle */}
+          <div className="flex items-center gap-3 p-3 bg-secondary/30 rounded-lg border border-border/50">
+            <div className={`w-5 h-5 rounded-full border flex items-center justify-center cursor-pointer ${isPublished ? 'border-accent bg-accent' : 'border-gray-500'}`} onClick={() => setIsPublished(!isPublished)}>
+              {isPublished && <CheckCircle2 size={14} className="text-white" />}
+            </div>
+            <span className="text-sm cursor-pointer select-none" onClick={() => setIsPublished(!isPublished)}>Publish immediately</span>
+          </div>
+
+          {/* Submit Button & Progress */}
+          <div className="pt-4">
+            {loading ? (
+              <div className="space-y-2">
+                <div className="flex justify-between text-xs text-gray-400">
+                  <span>Uploading...</span>
+                  <span>{progress}%</span>
+                </div>
+                <div className="w-full bg-secondary h-2 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-accent transition-all duration-300 ease-out"
+                    style={{ width: `${progress}%` }}
+                  />
+                </div>
+              </div>
+            ) : (
+              <button
+                type="submit"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-colors"
+              >
+                Upload Video
+              </button>
+            )}
+          </div>
+        </div>
+      </form>
+    </div>
   )
 }
 export default withAuth(UploadVideoPage);

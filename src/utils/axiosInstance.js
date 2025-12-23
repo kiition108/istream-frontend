@@ -1,4 +1,5 @@
 import axios from 'axios'
+import authStorage from './authStorage'
 
 const axiosInstance = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
@@ -18,6 +19,17 @@ const processQueue = (error, token = null) => {
   })
   failedQueue = []
 }
+
+axiosInstance.interceptors.request.use(
+  (config) => {
+    const token = authStorage.getToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
 axiosInstance.interceptors.response.use(
   (response) => response,
