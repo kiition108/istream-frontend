@@ -61,9 +61,12 @@ export default function VideoListPage() {
     );
   }
 
-  // If NOT authenticated, show Landing Page
+  // If NOT authenticated, redirect to /home
   if (!user) {
-    return <LandingPage />;
+    if (typeof window !== 'undefined') {
+      window.location.href = '/home';
+    }
+    return <Loader />;
   }
 
   // If loading videos
