@@ -4,12 +4,15 @@
   /* Default to Dark Mode aesthetics */
   --background: #0f0f0f;
   --foreground: #f1f1f1;
-  --secondary: #272727; /* Hover states, secondary buttons */
+  --secondary: #272727;
+  /* Hover states, secondary buttons */
   --secondary-foreground: #ffffff;
-  --accent: #ff0000; /* YouTube Red-ish */
+  --accent: #ff0000;
+  /* YouTube Red-ish */
   --border: #3f3f3f;
   --input: #121212;
-  --ring: #3ea6ff; /* Focus blue */
+  --ring: #3ea6ff;
+  /* Focus blue */
 }
 
 @theme inline {
@@ -29,5 +32,16 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
-  overflow-x: hidden; /* Prevent horizontal scroll */
+  overflow-x: hidden;
+  /* Prevent horizontal scroll */
+}
+
+/* Fix for browser autofill background color */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px #272727 inset !important;
+  -webkit-text-fill-color: white !important;
+  transition: background-color 5000s ease-in-out 0s;
 }

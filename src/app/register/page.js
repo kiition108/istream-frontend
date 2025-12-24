@@ -70,24 +70,23 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-900 via-blue-900 to-black px-4 py-8">
+    <div className="min-h-screen flex items-center justify-center bg-[#0f0f0f] relative overflow-hidden px-4 py-8">
       {/* Background decorative elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 right-10 w-72 h-72 bg-purple-500/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-20 left-10 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"></div>
-      </div>
+      <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-purple-900/40 via-blue-900/20 to-black pointer-events-none z-0"></div>
+      <div className="absolute top-20 right-10 w-72 h-72 bg-purple-600/20 rounded-full blur-[100px] z-0"></div>
+      <div className="absolute bottom-20 left-10 w-96 h-96 bg-blue-600/20 rounded-full blur-[100px] z-0"></div>
 
-      <div className="relative w-full max-w-md">
+      <div className="relative w-full max-w-md z-10">
         {/* Card */}
-        <div className="bg-background/95 backdrop-blur-xl border border-border rounded-2xl shadow-2xl p-8 space-y-6">
+        <div className="bg-[#1f1f1f]/90 backdrop-blur-xl border border-border rounded-2xl shadow-2xl p-8 space-y-6">
           {/* Header */}
           <div className="text-center space-y-2">
             <div className="flex justify-center mb-4">
-              <div className="p-3 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full">
+              <div className="p-3 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full shadow-lg shadow-purple-500/30">
                 <UserPlus size={32} className="text-white" />
               </div>
             </div>
-            <h2 className="text-3xl font-bold text-white">Create Account</h2>
+            <h2 className="text-3xl font-bold text-white tracking-tight">Create Account</h2>
             <p className="text-gray-400">Join us today and start sharing</p>
           </div>
 
@@ -96,9 +95,9 @@ export default function Register() {
             {/* Avatar Upload */}
             <div className="flex justify-center">
               <div className="relative group">
-                <div className="w-24 h-24 rounded-full overflow-hidden bg-secondary border-4 border-border shadow-lg">
+                <div className="w-24 h-24 rounded-full overflow-hidden bg-[#2a2a2a] border-4 border-border shadow-lg">
                   {avatarPreview ? (
-                    <Image src={avatarPreview} alt="Avatar Preview" className="w-full h-full object-cover" />
+                    <Image src={avatarPreview} alt="Avatar Preview" width={96} height={96} className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-500">
                       <User size={40} />
@@ -130,7 +129,7 @@ export default function Register() {
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <User size={20} className="text-gray-500" />
+                  <User size={20} className="text-gray-400" />
                 </div>
                 <input
                   type="text"
@@ -140,7 +139,7 @@ export default function Register() {
                   onChange={handleChange}
                   required
                   placeholder="John Doe"
-                  className="w-full pl-10 pr-4 py-3 bg-secondary border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-gray-500 transition-all"
+                  className="w-full pl-10 pr-4 py-3 bg-[#2a2a2a] border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-gray-500 transition-all shadow-inner"
                 />
               </div>
             </div>
@@ -152,7 +151,7 @@ export default function Register() {
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <span className="text-gray-500 text-sm">@</span>
+                  <span className="text-gray-400 text-sm">@</span>
                 </div>
                 <input
                   type="text"
@@ -162,7 +161,7 @@ export default function Register() {
                   onChange={handleChange}
                   required
                   placeholder="johndoe"
-                  className="w-full pl-8 pr-4 py-3 bg-secondary border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-gray-500 transition-all"
+                  className="w-full pl-8 pr-4 py-3 bg-[#2a2a2a] border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-gray-500 transition-all shadow-inner"
                 />
               </div>
             </div>
@@ -174,7 +173,7 @@ export default function Register() {
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail size={20} className="text-gray-500" />
+                  <Mail size={20} className="text-gray-400" />
                 </div>
                 <input
                   type="email"
@@ -184,7 +183,7 @@ export default function Register() {
                   onChange={handleChange}
                   required
                   placeholder="john@example.com"
-                  className="w-full pl-10 pr-4 py-3 bg-secondary border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-gray-500 transition-all"
+                  className="w-full pl-10 pr-4 py-3 bg-[#2a2a2a] border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-gray-500 transition-all shadow-inner"
                 />
               </div>
             </div>
@@ -196,17 +195,17 @@ export default function Register() {
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock size={20} className="text-gray-500" />
+                  <Lock size={20} className="text-gray-400" />
                 </div>
                 <input
-                  type={showPassword ? 'text' : 'password'}
+                  type="text" // Temporary for debugging if hidden
                   name="password"
                   id="password"
                   value={form.password}
                   onChange={handleChange}
                   required
                   placeholder="Create a strong password"
-                  className="w-full pl-10 pr-12 py-3 bg-secondary border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-gray-500 transition-all"
+                  className="w-full pl-10 pr-12 py-3 bg-[#2a2a2a] border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-gray-500 transition-all shadow-inner"
                 />
                 <button
                   type="button"

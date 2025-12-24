@@ -29,6 +29,14 @@ export function AuthProvider({ children }) {
         }
       }
 
+      // Optimization: Check if we have a token first
+      const token = authStorage.getToken();
+      if (!token) {
+        setLoading(false);
+        setUser(null);
+        return;
+      }
+
       try {
         const response = await userService.getCurrentUser();
 

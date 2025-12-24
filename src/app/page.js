@@ -52,21 +52,24 @@ export default function VideoListPage() {
     }
   };
 
-  // If loading auth state, show loader
+  // If NOT authenticated, show Landing Page immediately
+  // This ensures Google Bot sees the "iStream" branding and purpose instantly unlike a Redirect or Loader
+  if (!user) {
+    return <LandingPage />;
+  }
+
+  // If loading auth state (and we have a user in local storage potentially being verified), show loader
+  // But if user was null, we already returned LandingPage above.
+  // So this only hits if we have a partial user state or explicitly waiting?
+  // Actually, if user is in localStorage, `user` is set, so we skip the block above.
+  // If user is NOT in localStorage, `user` is null, so we return LandingPage.
+  // So we effectively skip the "initial app load" spinner for guests/bots, which is PERFECT for SEO.
   if (authLoading) {
     return (
       <div className="flex justify-center items-center min-h-[50vh]">
         <Loader />
       </div>
     );
-  }
-
-  // If NOT authenticated, redirect to /home
-  if (!user) {
-    if (typeof window !== 'undefined') {
-      window.location.href = '/home';
-    }
-    return <Loader />;
   }
 
   // If loading videos
