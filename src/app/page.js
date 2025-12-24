@@ -4,29 +4,32 @@ import { videoService } from '@/api';
 import VideoCard from '@/components/VideoCard';
 import VideoCardSkeleton from '@/components/VideoCardSkeleton';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '@/app/contexts/Authcontext';
+import LandingPage from '@/components/LandingPage';
+import Loader from '@/components/Loader';
 
 export default function VideoListPage() {
   const [page, setPage] = useState(1);
   const [allVideos, setAllVideos] = useState([]);
   const queryClient = useQueryClient();
+  const { user, loading: authLoading } = useAuth(); // Get auth state
 
-  // Fetch videos with React Query
+  // Fetch videos with React Query - ONLY if user is authenticated
   const { data, isLoading, error, isFetching } = useQuery({
     queryKey: ['allVideos', page],
     queryFn: async () => {
       const response = await videoService.getAllVideos(page);
       return response.data;
     },
-    staleTime: 3 * 60 * 1000, // Data stays fresh for 3 minutes
+    staleTime: 3 * 60 * 1000,
+    enabled: !!user, // Only fetch if user exists
   });
 
   // Accumulate videos when new page data arrives
   useEffect(() => {
     if (data?.docs) {
       setAllVideos(prev => {
-        // If it's page 1, replace all videos
         if (page === 1) return data.docs;
-        // Otherwise, append new videos, avoiding duplicates
         const existingIds = new Set(prev.map(v => v._id));
         const newVideos = data.docs.filter(v => !existingIds.has(v._id));
         return [...prev, ...newVideos];
@@ -36,9 +39,9 @@ export default function VideoListPage() {
 
   const hasNextPage = data?.hasNextPage || false;
 
-  // Prefetch next page for smoother UX
+  // Prefetch next page
   const prefetchNextPage = () => {
-    if (hasNextPage) {
+    if (hasNextPage && user) {
       queryClient.prefetchQuery({
         queryKey: ['allVideos', page + 1],
         queryFn: async () => {
@@ -49,6 +52,21 @@ export default function VideoListPage() {
     }
   };
 
+  // If loading auth state, show loader
+  if (authLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-[50vh]">
+        <Loader />
+      </div>
+    );
+  }
+
+  // If NOT authenticated, show Landing Page
+  if (!user) {
+    return <LandingPage />;
+  }
+
+  // If loading videos
   if (isLoading && allVideos.length === 0) {
     return (
       <div className="pt-2">
