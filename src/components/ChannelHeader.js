@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import axiosInstance from '@/utils/axiosInstance'
 import ChannelSubscribeButton from './ChannelSubscribeButton'
+import Loader from '@/components/Loader'
 
 export default function ChannelHeader({ username }) {
   const [channel, setChannel] = useState(null)
@@ -21,7 +22,7 @@ export default function ChannelHeader({ username }) {
     if (username) fetchChannel()
   }, [username])
 
-  if (!channel) return <p>Loading...</p>
+  if (!channel) return <Loader />
 
   return (
     <div className="w-full max-w-5xl mx-auto">

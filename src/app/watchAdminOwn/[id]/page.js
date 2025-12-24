@@ -6,16 +6,17 @@ import Navbar from '../../../components/Navbar'; // adjust path if needed
 import { useAuth } from '@/app/contexts/Authcontext';
 import axiosInstance from '@/utils/axiosInstance';
 import { toast, ToastContainer } from 'react-toastify';
+import Loader from '@/components/Loader';
 
- function WatchVideoAdminOwnerPage() {
+function WatchVideoAdminOwnerPage() {
   const { id } = useParams();
   const [video, setVideo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const {user}= useAuth();
+  const { user } = useAuth();
   useEffect(() => {
     if (!id) return;
-    
+
     const fetchVideo = async () => {
       try {
         setLoading(true);
@@ -35,12 +36,12 @@ import { toast, ToastContainer } from 'react-toastify';
     };
 
     fetchVideo();
-  
+
   }, [id]);
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        Loading...
+        <Loader />
       </div>
     );
   }
@@ -60,8 +61,8 @@ import { toast, ToastContainer } from 'react-toastify';
       <Navbar />
       <div className="max-w-4xl mx-auto p-4">
         <div className="aspect-video bg-black mb-4">
-          <video 
-            controls 
+          <video
+            controls
             className="w-full h-full object-contain"
             poster={video.thumbnail}
             src={video.videoFile}

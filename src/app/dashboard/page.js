@@ -3,67 +3,144 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
-import { Edit2, Trash2, Eye, Lock, Globe, Plus, Loader2, ShieldCheck } from 'lucide-react';
+import { Edit2, Trash2, Eye, Plus, ShieldCheck } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import withAuth from '@/utils/withAuth';
 import axiosInstance from '@/utils/axiosInstance';
 import Link from 'next/link';
 import { useAuth } from '@/app/contexts/Authcontext';
+import Loader from '@/components/Loader';
+import VideoThumbnail from '@/components/VideoThumbnail';
 
 function DashboardPage() {
-  const [videos, setVideos] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const [page, setPage] = useState(1);
-  const [hasNextPage, setHasNextPage] = useState(false);
-
+  const [allVideos, setAllVideos] = useState([]);
   const router = useRouter();
   const { user } = useAuth();
+  const queryClient = useQueryClient();
 
-  const fetchUserVideos = async (currentPage = 1) => {
-    try {
-      setLoading(true);
-      const res = await axiosInstance.get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/video/user?page=${currentPage}&limit=12`, {
-        withCredentials: true,
-      });
-      setVideos(prev => currentPage === 1 ? res.data.data.docs : [...prev, ...res.data.data.docs]);
-      setHasNextPage(res.data.data.hasNextPage);
-    } catch (err) {
-      console.error(err);
-      setError('Failed to fetch your videos.');
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Fetch user videos with React Query
+  const { data, isLoading, error, isFetching } = useQuery({
+    queryKey: ['userVideos', page],
+    queryFn: async () => {
+      const res = await axiosInstance.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/video/user?page=${page}&limit=12`,
+        { withCredentials: true }
+      );
+      return res.data.data;
+    },
+  });
 
+  // Accumulate videos when new page data arrives
   useEffect(() => {
-    fetchUserVideos(page);
-  }, [page]);
-
-  const handleDelete = async (videoId) => {
-    if (!confirm('Are you sure you want to delete this video?')) return;
-    try {
-      await axiosInstance.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/video/${videoId}`, {
-        withCredentials: true,
+    if (data?.docs) {
+      setAllVideos(prev => {
+        // If it's page 1, replace all videos
+        if (page === 1) return data.docs;
+        // Otherwise, append new videos, avoiding duplicates
+        const existingIds = new Set(prev.map(v => v._id));
+        const newVideos = data.docs.filter(v => !existingIds.has(v._id));
+        return [...prev, ...newVideos];
       });
-      setVideos(videos.filter(v => v._id !== videoId));
-      toast.success('Video deleted');
-    } catch (err) {
-      toast.error('Failed to delete video');
     }
-  };
+  }, [data, page]);
 
-  const handleTogglePrivacy = async (videoId) => {
-    try {
+  const hasNextPage = data?.hasNextPage || false;
+
+  // Delete video mutation with optimistic update
+  const deleteMutation = useMutation({
+    mutationFn: async (videoId) => {
+      await axiosInstance.delete(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/video/${videoId}`,
+        { withCredentials: true }
+      );
+      return videoId;
+    },
+    onMutate: async (videoId) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['userVideos'] });
+
+      // Snapshot previous value
+      const previousData = queryClient.getQueryData(['userVideos', page]);
+
+      // Optimistically update cache
+      queryClient.setQueryData(['userVideos', page], (old) => ({
+        ...old,
+        docs: old.docs.filter((v) => v._id !== videoId),
+      }));
+
+      return { previousData };
+    },
+    onError: (err, videoId, context) => {
+      // Rollback on error
+      queryClient.setQueryData(['userVideos', page], context.previousData);
+      toast.error('Failed to delete video');
+    },
+    onSuccess: () => {
+      toast.success('Video deleted');
+    },
+    onSettled: () => {
+      // Refetch to ensure sync
+      queryClient.invalidateQueries({ queryKey: ['userVideos'] });
+    },
+  });
+
+  // Toggle privacy mutation with optimistic update
+  const togglePrivacyMutation = useMutation({
+    mutationFn: async (videoId) => {
       await axiosInstance.put(
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/video/privacy/${videoId}`,
         {},
         { withCredentials: true }
       );
-      // Optimistic update
-      setVideos(videos.map(v => v._id === videoId ? { ...v, isPublished: !v.isPublished } : v));
-      toast.success('Privacy updated');
-    } catch (err) {
+      return videoId;
+    },
+    onMutate: async (videoId) => {
+      await queryClient.cancelQueries({ queryKey: ['userVideos'] });
+
+      const previousData = queryClient.getQueryData(['userVideos', page]);
+
+      // Optimistically update
+      queryClient.setQueryData(['userVideos', page], (old) => ({
+        ...old,
+        docs: old.docs.map((v) =>
+          v._id === videoId ? { ...v, isPublished: !v.isPublished } : v
+        ),
+      }));
+
+      return { previousData };
+    },
+    onError: (err, videoId, context) => {
+      queryClient.setQueryData(['userVideos', page], context.previousData);
       toast.error('Failed to update privacy');
+    },
+    onSuccess: () => {
+      toast.success('Privacy updated');
+    },
+  });
+
+  const handleDelete = async (videoId) => {
+    if (!confirm('Are you sure you want to delete this video?')) return;
+    deleteMutation.mutate(videoId);
+  };
+
+  const handleTogglePrivacy = async (videoId) => {
+    togglePrivacyMutation.mutate(videoId);
+  };
+
+  // Prefetch next page
+  const prefetchNextPage = () => {
+    if (hasNextPage) {
+      queryClient.prefetchQuery({
+        queryKey: ['userVideos', page + 1],
+        queryFn: async () => {
+          const res = await axiosInstance.get(
+            `${process.env.NEXT_PUBLIC_API_URL}/api/v1/video/user?page=${page + 1}&limit=12`,
+            { withCredentials: true }
+          );
+          return res.data.data;
+        },
+      });
     }
   };
 
@@ -89,7 +166,7 @@ function DashboardPage() {
         </div>
       </div>
 
-      {videos.length === 0 && !loading && (
+      {allVideos.length === 0 && !isLoading && (
         <div className="flex flex-col items-center justify-center min-h-[40vh] border border-dashed border-border rounded-xl">
           <div className="bg-secondary p-4 rounded-full mb-4">
             <Plus size={32} className="text-gray-400" />
@@ -105,14 +182,14 @@ function DashboardPage() {
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {videos.map((video) => (
+        {allVideos.map((video) => (
           <div key={video._id} className="group flex flex-col gap-3 relative">
             {/* Thumbnail & Overlays */}
-            <div className="relative aspect-video bg-secondary rounded-xl overflow-hidden">
-              <img
+            <div className="relative">
+              <VideoThumbnail
                 src={video.thumbnail}
                 alt={video.title}
-                className="w-full h-full object-cover transition-opacity group-hover:opacity-75"
+                priority={false}
               />
 
               {/* Status Badge */}
@@ -128,9 +205,9 @@ function DashboardPage() {
               </div>
 
               {/* Hover Actions Overlay */}
-              <div className="absolute inset-0 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 backdrop-blur-sm">
+              <div className="absolute inset-0 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 backdrop-blur-sm rounded-xl">
                 <button
-                  onClick={() => router.push(`/watch/${video._id}`)}
+                  onClick={() => router.push(video?.isPublished === false ? `/watchAdminOwn/${video._id}` : `/watch/${video._id}`)}
                   className="p-2 bg-white/10 hover:bg-white/20 rounded-full text-white backdrop-blur-md transition-colors"
                   title="View"
                 >
@@ -170,20 +247,30 @@ function DashboardPage() {
         ))}
       </div>
 
-      {loading && (
+      {isFetching && allVideos.length > 0 && (
         <div className="flex justify-center p-8">
-          <Loader2 className="animate-spin text-accent" size={32} />
+          <Loader />
         </div>
       )}
 
-      {hasNextPage && !loading && (
+      {hasNextPage && !isFetching && (
         <div className="flex justify-center mt-8">
           <button
-            onClick={() => setPage(prev => prev + 1)}
+            onClick={() => {
+              setPage((prev) => prev + 1);
+              prefetchNextPage();
+            }}
+            onMouseEnter={prefetchNextPage}
             className="px-6 py-2 bg-secondary hover:bg-border rounded-full text-sm font-medium transition-colors"
           >
             Load More
           </button>
+        </div>
+      )}
+
+      {error && (
+        <div className="flex justify-center p-8 text-red-500">
+          Failed to load videos
         </div>
       )}
     </div>

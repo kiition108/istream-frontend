@@ -36,26 +36,6 @@ const userService = {
         return response.data;
     },
 
-    // Toggle Subscription
-    toggleSubscription: async (channelId) => {
-        // This is a toggle endpoint or we check status logic? 
-        // Based on previous code, it had separate DELETE and POST logic.
-        // We can expose both or a toggle if the backend supports it.
-        // I'll expose verify specific actions to be safe.
-        // Wait, the previous code had logic to check `isSubscribed` then calling delete or post.
-        // I will implement subscribe and unsubscribe.
-    },
-
-    subscribe: async (channelId) => {
-        const response = await axiosInstance.post(`/api/v1/subscriptions/${channelId}`);
-        return response.data;
-    },
-
-    unsubscribe: async (channelId) => {
-        const response = await axiosInstance.delete(`/api/v1/subscriptions/${channelId}`);
-        return response.data;
-    },
-
     // Update Account
     updateAccount: async (data) => {
         const response = await axiosInstance.patch('/api/v1/users/update-account', data);

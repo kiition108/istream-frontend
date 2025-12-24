@@ -1,10 +1,23 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    // Add environment variables if necessary
-    images: {
-      domains: ['res.cloudinary.com'],
-    },
-  
+  // Add environment variables if necessary
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+      },
+      {
+        protocol: 'http',
+        hostname: 'res.cloudinary.com',
+      },
+    ],
+  },
+
   // Add rewrites to proxy API requests to the backend
   async rewrites() {
     return [

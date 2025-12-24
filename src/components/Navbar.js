@@ -1,15 +1,35 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/app/contexts/Authcontext';
-import { Menu, Search, Video, Bell, User as UserIcon } from 'lucide-react';
+import { Menu, Search, Video, Bell, User as UserIcon, LogOut } from 'lucide-react';
 import Image from 'next/image';
 
 export default function Navbar({ toggleSidebar }) {
   const { user, logout } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const dropdownRef = useRef(null);
+
+  // Click outside handler
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowUserMenu(false);
+      }
+    };
+
+    // Add event listener when dropdown is open
+    if (showUserMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    // Cleanup
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showUserMenu]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -69,14 +89,16 @@ export default function Navbar({ toggleSidebar }) {
         </button>
 
         {user ? (
-          <div className="relative">
+          <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setShowUserMenu(!showUserMenu)}
-              className="w-8 h-8 rounded-full overflow-hidden border border-border"
+              className="w-8 h-8 rounded-full overflow-hidden border border-border hover:border-blue-500 transition-colors"
             >
-              <img
-                src={user.avatar || '/default-avatar.png'}
+              <Image
+                src={user.avatar}
                 alt="User"
+                width={32}
+                height={32}
                 className="w-full h-full object-cover"
               />
             </button>
@@ -88,20 +110,30 @@ export default function Navbar({ toggleSidebar }) {
                   <p className="text-sm text-gray-400 truncate">@{user.username}</p>
                 </div>
 
-                <Link href="/profile" className="flex items-center gap-3 px-4 py-2 hover:bg-border">
+                <Link
+                  href="/profile"
+                  className="flex items-center gap-3 px-4 py-2 hover:bg-border transition-colors"
+                  onClick={() => setShowUserMenu(false)}
+                >
                   <UserIcon size={20} />
                   <span>Profile</span>
                 </Link>
-                {/* ... other menu items ... */}
-                <Link href={`Channel/${user.username}`} className="flex items-center gap-3 px-4 py-2 hover:bg-border">
+                <Link
+                  href={`/Channel/${user.username}`}
+                  className="flex items-center gap-3 px-4 py-2 hover:bg-border transition-colors"
+                  onClick={() => setShowUserMenu(false)}
+                >
                   <UserIcon size={20} />
                   <span>Channel</span>
                 </Link>
                 <button
-                  onClick={logout}
-                  className="w-full text-left flex items-center gap-3 px-4 py-2 hover:bg-border text-red-400"
+                  onClick={() => {
+                    setShowUserMenu(false);
+                    logout();
+                  }}
+                  className="w-full text-left flex items-center gap-3 px-4 py-2 hover:bg-border text-red-400 transition-colors"
                 >
-                  <LogOut size={20} /> {/* Need to import LogOut */}
+                  <LogOut size={20} />
                   <span>Sign Out</span>
                 </button>
               </div>
@@ -119,6 +151,3 @@ export default function Navbar({ toggleSidebar }) {
     </nav>
   );
 }
-
-// Helper import for LogOut reused inside component
-import { LogOut } from 'lucide-react'; 

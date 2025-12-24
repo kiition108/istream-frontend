@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { MoreVertical, CheckCircle2 } from 'lucide-react';
+import VideoThumbnail from './VideoThumbnail';
+import Image from 'next/image';
 
 export default function VideoCard({ video }) {
     const [isHovered, setIsHovered] = useState(false);
@@ -50,15 +52,16 @@ export default function VideoCard({ video }) {
             onMouseLeave={() => setIsHovered(false)}
         >
             {/* Thumbnail Wrapper */}
-            <Link href={`/watch/${video._id}`} className="block relative w-full aspect-video rounded-xl overflow-hidden bg-secondary">
-                <img
+            <Link href={`/watch/${video._id}`} className="block relative w-full">
+                <VideoThumbnail
                     src={video.thumbnail}
                     alt={video.title}
-                    className={`w-full h-full object-cover object-center transition-transform duration-200 ${isHovered ? 'scale-105' : 'scale-100'}`}
+                    priority={false}
+                    className={`transition-transform duration-200 ${isHovered ? 'scale-105' : 'scale-100'}`}
                 />
 
                 {/* Duration Badge */}
-                <div className="absolute bottom-2 right-2 bg-black/80 text-white text-xs px-1.5 py-0.5 rounded font-medium">
+                <div className="absolute bottom-2 right-2 bg-black/80 text-white text-xs px-1.5 py-0.5 rounded font-medium z-10">
                     {duration}
                 </div>
 
@@ -69,7 +72,7 @@ export default function VideoCard({ video }) {
                         autoPlay
                         muted
                         loop
-                        className="absolute inset-0 w-full h-full object-cover"
+                        className="absolute inset-0 w-full h-full object-cover rounded-xl"
                     />
                 )}
             </Link>
@@ -78,9 +81,11 @@ export default function VideoCard({ video }) {
             <div className="flex gap-3 px-1">
                 {/* Channel Avatar */}
                 <Link href={`/Channel/${typeof video.owner === 'object' ? video.owner?.username : 'unknown'}`} className="flex-shrink-0">
-                    <img
+                    <Image
                         src={(typeof video.owner === 'object' ? video.owner?.avatar : null) || '/default-avatar.png'}
                         alt="Channel"
+                        width={36}
+                        height={36}
                         className="w-9 h-9 rounded-full object-cover mt-0.5 hover:opacity-80 transition-opacity"
                     />
                 </Link>

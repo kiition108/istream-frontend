@@ -6,6 +6,7 @@ import { toast } from 'react-toastify';
 import { Upload, Image as ImageIcon, CheckCircle2 } from 'lucide-react';
 import withAuth from '@/utils/withAuth';
 import axiosInstance from '@/utils/axiosInstance';
+import Image from 'next/image';
 
 function UploadVideoPage() {
   const [videoFile, setVideoFile] = useState(null)
@@ -168,7 +169,7 @@ function UploadVideoPage() {
               onClick={() => document.getElementById('thumbnail-upload').click()}
             >
               {thumbnailPreviewUrl ? (
-                <img src={thumbnailPreviewUrl} alt="Thumbnail" className="w-full h-full object-cover" />
+                <Image src={thumbnailPreviewUrl} alt="Thumbnail" className="w-full h-full object-cover" />
               ) : (
                 <div className="text-center p-4">
                   <ImageIcon className="text-gray-400 mx-auto mb-2" size={24} />

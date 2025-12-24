@@ -4,7 +4,8 @@ import Link from 'next/link'
 import { toast } from 'react-toastify'
 import { useAuth } from '@/app/contexts/Authcontext'
 import { useRouter } from 'next/navigation'
-import { userService } from '@/api'
+import { userService, subscriptionService } from '@/api'
+import Loader from '@/components/Loader'
 
 export default function ChannelSubscribeButton({ username }) {
   const [channel, setChannel] = useState(null)
@@ -27,12 +28,13 @@ export default function ChannelSubscribeButton({ username }) {
 
   useEffect(() => {
     if (username) fetchChannel()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [username])
 
   const toggleSubscribe = async () => {
     try {
       if (channel.isSubscribed) {
-        const data = await userService.unsubscribe(channel._id)
+        const data = await subscriptionService.unsubscribe(channel._id)
         setChannel(prev => ({
           ...prev,
           isSubscribed: false,
@@ -40,7 +42,7 @@ export default function ChannelSubscribeButton({ username }) {
         }))
         toast.success(data.data.message || "Unsubscribed")
       } else {
-        const data = await userService.subscribe(channel._id)
+        const data = await subscriptionService.subscribe(channel._id)
         setChannel(prev => ({
           ...prev,
           isSubscribed: true,
@@ -55,7 +57,7 @@ export default function ChannelSubscribeButton({ username }) {
   const channelRoute = () => {
     Router.push(`/Channel/${channel.username}`)
   }
-  if (loading) return <p className="text-center">Loading...</p>
+  if (loading) return <Loader />
   if (error) return <p className="text-center text-red-500">{error}</p>
 
   return (
@@ -85,8 +87,8 @@ export default function ChannelSubscribeButton({ username }) {
         <button
           onClick={toggleSubscribe}
           className={`px-5 py-2 text-sm font-semibold rounded-full transition duration-200 ${channel.isSubscribed
-              ? 'bg-gray-200 text-black hover:bg-gray-300'
-              : 'bg-red-600 text-white hover:bg-red-700'
+            ? 'bg-gray-200 text-black hover:bg-gray-300'
+            : 'bg-red-600 text-white hover:bg-red-700'
             }`}
         >
           {channel.isSubscribed ? 'Unsubscribe' : 'Subscribe'}
