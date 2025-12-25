@@ -28,7 +28,6 @@ function VerifyOtpForm({ userId }) {
       toast.success(res.data.message || 'Email verified successfully!');
       router.push('/login');
     } catch (err) {
-      console.error(err);
       toast.error(err?.response?.data?.message || 'Invalid or expired OTP');
     } finally {
       setLoading(false);
@@ -39,7 +38,7 @@ function VerifyOtpForm({ userId }) {
     <form onSubmit={handleVerifyOtp} className="max-w-md mx-auto p-6 bg-white rounded shadow">
       <h2 className="text-2xl font-bold mb-4">Verify Your Email</h2>
       <p className="text-gray-600 mb-4">Enter the OTP sent to your email.</p>
-      
+
       <input
         type="text"
         value={otp}

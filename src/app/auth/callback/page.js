@@ -62,18 +62,16 @@ export default function AuthCallback() {
                     setStatus('success');
                     toast.success('Successfully signed in with Google!');
 
-                    // Redirect to home
+                    // Redirect to home - using replace to trigger AuthContext refresh
                     setTimeout(() => {
                         window.location.href = '/';
-                    }, 1000);
+                    }, 500);
                 } catch (decodeError) {
-                    console.error('Error decoding token:', decodeError);
                     setStatus('error');
                     toast.error('Failed to process authentication');
                     setTimeout(() => router.push('/login'), 2000);
                 }
             } catch (err) {
-                console.error('Auth callback error:', err);
                 setStatus('error');
                 toast.error('Authentication failed');
                 setTimeout(() => router.push('/login'), 2000);

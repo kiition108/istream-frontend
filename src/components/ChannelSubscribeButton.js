@@ -70,8 +70,7 @@ export default function ChannelSubscribeButton({ username }) {
             alt="Channel Avatar"
             width={50}
             height={50}
-            style={{ height: "auto", width: "auto" }}
-            className="rounded-full object-cover"
+            className="rounded-full object-cover w-[50px] h-[50px]"
           />
         </Link>
         <div>

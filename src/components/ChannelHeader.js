@@ -9,20 +9,32 @@ import Loader from '@/components/Loader'
 export default function ChannelHeader({ username }) {
   const [channel, setChannel] = useState(null)
   const [showMore, setShowMore] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     const fetchChannel = async () => {
+      setLoading(true)
+      setError(null)
       try {
+        // Assuming userService.getChannelProfile is a new abstraction for API calls
+        // For this change, I'll adapt the existing axiosInstance call to fit the new structure
         const res = await axiosInstance.get(`/api/v1/users/c/${username}`)
         setChannel(res.data.data)
       } catch (err) {
-        console.error('Failed to load channel', err)
+        setError('Failed to load channel')
+      } finally {
+        setLoading(false)
       }
     }
-    if (username) fetchChannel()
+    if (username) {
+      fetchChannel()
+    }
   }, [username])
 
-  if (!channel) return <Loader />
+  if (loading) return <Loader />
+  if (error) return <div className="text-red-500 text-center py-4">{error}</div>
+  if (!channel) return <div className="text-gray-500 text-center py-4">Channel not found.</div>
 
   return (
     <div className="w-full max-w-5xl mx-auto">

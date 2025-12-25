@@ -7,6 +7,12 @@ const videoService = {
         return response.data;
     },
 
+    // Search videos
+    searchVideos: async (query, page = 1, limit = 9) => {
+        const response = await axiosInstance.get(`/api/v1/video/search?q=${query}&page=${page}&limit=${limit}`);
+        return response.data;
+    },
+
     // Get single video by ID
     getVideoById: async (videoId) => {
         const response = await axiosInstance.get(`/api/v1/video/${videoId}`);
@@ -68,7 +74,33 @@ const videoService = {
     getUserVideos: async (page = 1, limit = 9) => {
         const response = await axiosInstance.get(`/api/v1/video/user?page=${page}&limit=${limit}`);
         return response.data;
-    }
+    },
+
+    // Record video view and add to history
+    recordView: async (videoId) => {
+        const response = await axiosInstance.post(`/api/v1/video/${videoId}/view`);
+        return response.data;
+    },
+
+    // Toggle like on a video
+    toggleLike: async (videoId) => {
+        const response = await axiosInstance.post(`/api/v1/video/${videoId}/like`);
+        return response.data;
+    },
+
+    // Toggle dislike on a video
+    toggleDislike: async (videoId) => {
+        const response = await axiosInstance.post(`/api/v1/video/${videoId}/dislike`);
+        return response.data;
+    },
+
+    // Get video reactions (likes/dislikes status)
+    getReactions: async (videoId) => {
+        const response = await axiosInstance.get(`/api/v1/video/${videoId}/reactions`);
+        return response.data;
+    },
+
+
 };
 
 export default videoService;

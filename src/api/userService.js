@@ -60,6 +60,18 @@ const userService = {
             },
         });
         return response.data;
+    },
+
+    // Change Password
+    changePassword: async (passwords) => {
+        const response = await axiosInstance.post('/api/v1/users/change-password', passwords);
+        return response.data;
+    },
+
+    // Get liked videos
+    getLikedVideos: async (page = 1, limit = 9) => {
+        const response = await axiosInstance.get(`/api/v1/users/liked-videos?page=${page}&limit=${limit}`);
+        return response.data;
     }
 };
 

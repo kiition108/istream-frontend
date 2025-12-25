@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/contexts/Authcontext';
-import { Menu, Search, Video, Bell, User as UserIcon, LogOut } from 'lucide-react';
+import { Menu, Search, Video, Bell, User as UserIcon, LogOut, MonitorPlay } from 'lucide-react';
 import Image from 'next/image';
 
 export default function Navbar({ toggleSidebar }) {
@@ -11,6 +12,7 @@ export default function Navbar({ toggleSidebar }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [showUserMenu, setShowUserMenu] = useState(false);
   const dropdownRef = useRef(null);
+  const router = useRouter();
 
   // Click outside handler
   useEffect(() => {
@@ -34,8 +36,7 @@ export default function Navbar({ toggleSidebar }) {
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      // Implement search navigation
-      console.log('Searching for:', searchQuery);
+      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
     }
   };
 
@@ -123,7 +124,7 @@ export default function Navbar({ toggleSidebar }) {
                   className="flex items-center gap-3 px-4 py-2 hover:bg-border transition-colors"
                   onClick={() => setShowUserMenu(false)}
                 >
-                  <UserIcon size={20} />
+                  <MonitorPlay size={20} />
                   <span>Channel</span>
                 </Link>
                 <button

@@ -20,10 +20,10 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     const fetchUser = async () => {
-      // Skip auth check on login/register pages to prevent redirect loops
+      // Skip auth check on login/register/callback pages to prevent redirect loops
       if (typeof window !== 'undefined') {
         const pathname = window.location.pathname;
-        if (pathname === '/login' || pathname === '/register') {
+        if (pathname === '/login' || pathname === '/register' || pathname === '/auth/callback') {
           setLoading(false);
           return;
         }
@@ -49,7 +49,6 @@ export function AuthProvider({ children }) {
           authStorage.removeToken();
         }
       } catch (error) {
-        console.error('Initial auth check failed:', error)
         setUser(null)
         authStorage.removeUser();
         authStorage.removeToken();
@@ -69,8 +68,7 @@ export function AuthProvider({ children }) {
       authStorage.removeToken();
       router.push('/')
     } catch (err) {
-      console.error('Logout failed:', err)
-      // Force logout on client even if server fails?
+      // Force logout on client even if server fails
       setUser(null)
       authStorage.removeUser();
       authStorage.removeToken();

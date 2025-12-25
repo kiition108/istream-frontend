@@ -1,40 +1,46 @@
 'use client';
 
 import {
-    Home,
-    Compass,
-    PlaySquare,
-    Clock,
-    ThumbsUp,
     User,
     LogOut,
     Menu,
-    History,
     MoreVertical,
-    LayoutDashboard as Dashboard
+    ThumbsUp,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/app/contexts/Authcontext';
+import { SIDEBAR_MENU_ITEMS, SIDEBAR_LIBRARY_ITEMS } from '@/constants';
+import { useQuery } from '@tanstack/react-query';
+import { subscriptionService } from '@/api';
+import Image from 'next/image';
+
+// Add Liked Videos if not present in constants (Runtime check/addition)
+const UPDATED_LIBRARY_ITEMS = [
+    ...SIDEBAR_LIBRARY_ITEMS,
+    // { label: 'Liked Videos', icon: ThumbsUp, href: '/liked-videos' }
+];
 
 export default function Sidebar({ isOpen, setIsOpen }) {
     const pathname = usePathname();
     const { user } = useAuth();
 
-    const menuItems = [
-        { icon: Home, label: 'Home', href: '/' },
-        { icon: Dashboard, label: 'Dashboard', href: '/dashboard' },
-        { icon: Compass, label: 'Shorts', href: '/shorts' }, // Placeholder
-        { icon: PlaySquare, label: 'Subscriptions', href: '/subscriptions' }, // Placeholder
-    ];
+    const menuItems = SIDEBAR_MENU_ITEMS;
+    const libraryItems = UPDATED_LIBRARY_ITEMS;
 
-    const libraryItems = [
-        { icon: History, label: 'History', href: '/history' },
-        { icon: Clock, label: 'Watch Later', href: '/p/watch-later' },
-        { icon: ThumbsUp, label: 'Liked Videos', href: '/p/liked' },
-    ];
 
     const isActive = (path) => pathname === path;
+
+    // Fetch Subscriptions
+    const { data: subscriptionData } = useQuery({
+        queryKey: ['subscriptions', user?._id],
+        queryFn: () => subscriptionService.getSubscriptions(1, 10),
+        enabled: !!user,
+        staleTime: 60000 * 5, // 5 minutes
+    });
+
+    // Check if the data is paginated (has docs) or a direct array
+    const subscriptions = subscriptionData?.data || (Array.isArray(subscriptionData) ? subscriptionData : []) || [];
 
     // Mini Sidebar (when collapsed)
     if (!isOpen) {
@@ -103,12 +109,47 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                         ))}
                     </div>
 
-                    {/* Subscriptions (Placeholder data) */}
+                    {/* Subscriptions */}
                     {user && (
                         <div className="pb-3">
                             <h3 className="px-3 py-2 text-base font-semibold">Subscriptions</h3>
-                            {/* We could map subscriptions here later */}
-                            <p className="px-3 text-sm text-gray-400">No subscriptions yet</p>
+
+                            {subscriptions.length > 0 ? (
+                                <div className="space-y-1">
+                                    {subscriptions.map((sub) => {
+                                        const channel = sub.channel || sub.subscriber || sub; // Fallback handling
+                                        // The API likely returns a subscription object with a 'channel' field populated
+                                        // Or it returns channels directly. Let's assume standard subscription object structure
+                                        const channelData = sub.channel || sub;
+
+                                        return (
+                                            <Link
+                                                key={channelData._id}
+                                                href={`/Channel/${channelData.username}`}
+                                                className={`flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-secondary transition-colors ${isActive(`/Channel/${channelData.username}`) ? 'bg-secondary' : ''}`}
+                                            >
+                                                <div className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0">
+                                                    <Image
+                                                        src={channelData.avatar}
+                                                        alt={channelData.username}
+                                                        width={24}
+                                                        height={24}
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                </div>
+                                                <span className="text-sm truncate">{channelData.fullName || channelData.username}</span>
+                                            </Link>
+                                        );
+                                    })}
+
+                                    {/* Show More link if needed - for now just listed */}
+                                    {/* <Link href="/subscriptions" className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-secondary text-sm text-gray-400">
+                                         <span>Show more</span>
+                                    </Link> */}
+                                </div>
+                            ) : (
+                                <p className="px-3 text-sm text-gray-400">No subscriptions yet</p>
+                            )}
                         </div>
                     )}
                 </div>

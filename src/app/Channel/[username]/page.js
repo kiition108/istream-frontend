@@ -5,13 +5,13 @@ import Image from 'next/image'
 import { useParams, useRouter } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import { toast } from 'react-toastify'
-import axiosInstance from '@/utils/axiosInstance'
 import { useAuth } from '@/app/contexts/Authcontext'
 import Loader from '@/components/Loader'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import VideoThumbnail from '@/components/VideoThumbnail'
 import { Play, Calendar } from 'lucide-react'
 import { subscriptionService } from '@/api'
+import { userService } from '@/api'
 
 export default function ChannelPage() {
   const { username } = useParams();
@@ -25,8 +25,8 @@ export default function ChannelPage() {
   const { data, isLoading, error, isFetching } = useQuery({
     queryKey: ['channelProfile', username, page],
     queryFn: async () => {
-      const res = await axiosInstance.get(`/api/v1/users/c/${username}?page=${page}&limit=12`)
-      return res.data.data
+      const res = await userService.getChannelProfile(username)
+      return res.data
     },
     enabled: !!username,
     staleTime: 3 * 60 * 1000, // 3 minutes
@@ -48,44 +48,77 @@ export default function ChannelPage() {
     }
   }, [data, page])
 
+  // Fetch subscription status separately
+  const { data: subscriptionStatus } = useQuery({
+    queryKey: ['subscriptionStatus', channel?._id],
+    queryFn: async () => {
+      if (!channel?._id) return null;
+      try {
+        const res = await subscriptionService.getChannelSubscriptionStatus(channel._id);
+        return res.data;
+      } catch (error) {
+        return null;
+      }
+    },
+    enabled: !!channel?._id && !!user,
+    staleTime: 1 * 60 * 1000, // 1 minute
+  });
+
+  // Merge subscription status into channel data
+  const channelWithSubscription = channel ? {
+    ...channel,
+    isSubscribed: subscriptionStatus
+  } : null;
+
   // Subscribe/Unsubscribe mutation with optimistic update
   const subscriptionMutation = useMutation({
     mutationFn: async (isSubscribed) => {
       if (isSubscribed) {
-        await subscriptionService.unsubscribe(channel._id)
+        await subscriptionService.unsubscribe(channelWithSubscription._id)
         return { action: 'unsubscribe' }
       } else {
-        await subscriptionService.subscribe(channel._id)
+        await subscriptionService.subscribe(channelWithSubscription._id)
         return { action: 'subscribe' }
       }
     },
     onMutate: async (isSubscribed) => {
       await queryClient.cancelQueries({ queryKey: ['channelProfile', username] })
-      const previousData = queryClient.getQueryData(['channelProfile', username, page])
+      await queryClient.cancelQueries({ queryKey: ['subscriptionStatus', channelWithSubscription._id] })
 
+      const previousData = queryClient.getQueryData(['channelProfile', username, page])
+      const previousStatus = queryClient.getQueryData(['subscriptionStatus', channelWithSubscription._id])
+
+      // Update subscription status
+      queryClient.setQueryData(['subscriptionStatus', channelWithSubscription._id], {
+        isSubscribed: !isSubscribed
+      })
+
+      // Update channel data
       queryClient.setQueryData(['channelProfile', username, page], (old) => {
         if (!old) return old
         return {
           ...old,
-          isSubscribed: !isSubscribed,
           subscribersCount: isSubscribed ? old.subscribersCount - 1 : old.subscribersCount + 1,
         }
       })
 
-      return { previousData }
+      return { previousData, previousStatus }
     },
     onError: (err, isSubscribed, context) => {
       queryClient.setQueryData(['channelProfile', username, page], context.previousData)
+      queryClient.setQueryData(['subscriptionStatus', channelWithSubscription._id], context.previousStatus)
       toast.error(err.response?.data?.message || "Something went wrong")
     },
     onSuccess: (data) => {
       toast.success(data.action === 'subscribe' ? 'Subscribed!' : 'Unsubscribed!')
+      // Invalidate to refetch fresh data
+      queryClient.invalidateQueries({ queryKey: ['subscriptionStatus', channelWithSubscription._id] })
     },
   })
 
   const toggleSubscribe = () => {
-    if (!channel) return
-    subscriptionMutation.mutate(channel.isSubscribed)
+    if (!channelWithSubscription) return
+    subscriptionMutation.mutate(channelWithSubscription.isSubscribed)
   }
 
   const handleView = (videoId) => {
@@ -105,7 +138,7 @@ export default function ChannelPage() {
     }
   }
 
-  if (isLoading && !channel) {
+  if (isLoading && !channelWithSubscription) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <Loader />
@@ -124,7 +157,7 @@ export default function ChannelPage() {
     )
   }
 
-  if (!channel) return <Loader />
+  if (!channelWithSubscription) return <Loader />
 
   return (
     <>
@@ -132,9 +165,9 @@ export default function ChannelPage() {
       <div className="w-full">
         {/* Cover Banner */}
         <div className="w-full h-48 md:h-64 relative bg-gradient-to-br from-purple-600 via-pink-600 to-blue-600">
-          {channel.coverImage ? (
+          {channelWithSubscription.coverImage ? (
             <Image
-              src={channel.coverImage}
+              src={channelWithSubscription.coverImage}
               alt="Channel Cover"
               fill
               className="object-cover"
@@ -155,17 +188,17 @@ export default function ChannelPage() {
               {/* Avatar */}
               <div className="relative -mt-20 md:-mt-24">
                 <div className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-4 border-background shadow-xl bg-gray-800">
-                  {channel.avatar ? (
+                  {channelWithSubscription.avatar ? (
                     <Image
-                      src={channel.avatar}
-                      alt={channel.fullName}
+                      src={channelWithSubscription.avatar}
+                      alt={channelWithSubscription.fullName}
                       width={160}
                       height={160}
                       className="object-cover w-full h-full"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-4xl font-bold text-white">
-                      {channel.fullName?.[0]?.toUpperCase()}
+                      {channelWithSubscription.fullName?.[0]?.toUpperCase()}
                     </div>
                   )}
                 </div>
@@ -174,43 +207,45 @@ export default function ChannelPage() {
               {/* Channel Details */}
               <div className="flex-1">
                 <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
-                  {channel.fullName}
+                  {channelWithSubscription.fullName}
                 </h1>
-                <p className="text-gray-400 text-lg mb-3">@{channel.username}</p>
+                <p className="text-gray-400 text-lg mb-3">@{channelWithSubscription.username}</p>
 
                 <div className="flex items-center gap-4 text-sm text-gray-400 mb-4">
                   <span className="flex items-center gap-1">
-                    <strong className="text-white">{channel.subscribersCount}</strong> subscribers
+                    <strong className="text-white">{channelWithSubscription.subscribersCount}</strong> subscribers
                   </span>
                   <span>•</span>
                   <span className="flex items-center gap-1">
-                    <strong className="text-white">{channel.videosCount || 0}</strong> videos
+                    <strong className="text-white">{channelWithSubscription.videosCount || 0}</strong> videos
                   </span>
                 </div>
 
-                {channel.description && (
+                {channelWithSubscription.description && (
                   <p className="text-gray-300 text-sm max-w-3xl line-clamp-2">
-                    {channel.description}
+                    {channelWithSubscription.description}
                   </p>
                 )}
               </div>
 
               {/* Subscribe Button */}
-              {!authLoading && user?.username !== channel.username && (
-                <button
-                  onClick={toggleSubscribe}
-                  disabled={subscriptionMutation.isLoading}
-                  className={`px-6 py-3 rounded-full font-semibold transition-all transform hover:scale-105 whitespace-nowrap ${channel.isSubscribed
-                    ? 'bg-gray-700 hover:bg-gray-600 text-white'
-                    : 'bg-red-600 hover:bg-red-700 text-white'
-                    } ${subscriptionMutation.isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                >
-                  {subscriptionMutation.isLoading
-                    ? 'Loading...'
-                    : channel.isSubscribed
-                      ? 'Subscribed'
-                      : 'Subscribe'}
-                </button>
+              {!authLoading && user?.username !== channelWithSubscription.username && (
+                <div className="flex flex-col gap-2">
+                  <button
+                    onClick={toggleSubscribe}
+                    disabled={subscriptionMutation.isLoading}
+                    className={`px-6 py-3 rounded-full font-semibold transition-all transform hover:scale-105 whitespace-nowrap ${channelWithSubscription.isSubscribed
+                      ? 'bg-gray-700 hover:bg-gray-600 text-white'
+                      : 'bg-red-600 hover:bg-red-700 text-white'
+                      } ${subscriptionMutation.isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  >
+                    {subscriptionMutation.isLoading
+                      ? 'Loading...'
+                      : channelWithSubscription.isSubscribed
+                        ? 'Subscribed'
+                        : 'Subscribe'}
+                  </button>
+                </div>
               )}
             </div>
           </div>

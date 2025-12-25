@@ -7,6 +7,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/app/contexts/Authcontext';
 import LandingPage from '@/components/LandingPage';
 import Loader from '@/components/Loader';
+import { VIDEO_CATEGORIES } from '@/constants';
 
 export default function VideoListPage() {
   const [page, setPage] = useState(1);
@@ -78,7 +79,7 @@ export default function VideoListPage() {
       <div className="pt-2">
         {/* Category Pills Skeleton or same pills */}
         <div className="flex gap-3 overflow-x-auto pb-4 mb-4 no-scrollbar">
-          {['All', 'Music', 'Gaming', 'Live', 'Computer Programming', 'Podcasts', 'News'].map((tag) => (
+          {VIDEO_CATEGORIES.map((tag) => (
             <button key={tag} className="px-3 py-1.5 bg-secondary hover:bg-border rounded-lg text-sm whitespace-nowrap transition-colors font-medium">
               {tag}
             </button>
@@ -99,7 +100,7 @@ export default function VideoListPage() {
 
       {/* Category Pills (Optional Phase 4 idea, placeholder for now) */}
       <div className="flex gap-3 overflow-x-auto pb-4 mb-4 no-scrollbar">
-        {['All', 'Music', 'Gaming', 'Live', 'Computer Programming', 'Podcasts', 'News'].map((tag) => (
+        {VIDEO_CATEGORIES.map((tag) => (
           <button key={tag} className="px-3 py-1.5 bg-secondary hover:bg-border rounded-lg text-sm whitespace-nowrap transition-colors font-medium">
             {tag}
           </button>

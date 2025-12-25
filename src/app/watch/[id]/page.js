@@ -13,30 +13,129 @@ import { ThumbsUp, ThumbsDown, Share2, Eye } from 'lucide-react';
 
 function WatchVideoPage() {
   const { id } = useParams();
+  const { user } = useAuth();
+
   const [video, setVideo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { user } = useAuth();
+
+  // Reaction State
+  const [likes, setLikes] = useState(0);
+  const [dislikes, setDislikes] = useState(0);
+  const [userReaction, setUserReaction] = useState(null); // 'liked', 'disliked', or null
 
   useEffect(() => {
     if (!id) return;
-    const fetchVideo = async () => {
+
+    const fetchData = async () => {
       try {
         setLoading(true);
-        const data = await videoService.getVideoById(id);
-        setVideo(data.data);
+
+        // Fetch video details and reactions in parallel
+        const [videoRes, reactionRes] = await Promise.all([
+          videoService.getVideoById(id),
+          videoService.getReactions(id).catch(err => ({ data: { likes: 0, dislikes: 0, isLiked: false, isDisliked: false } }))
+        ]);
+
+        setVideo(videoRes.data);
+
+        // Set initial reaction state
+        if (reactionRes?.data) {
+          setLikes(reactionRes.data.likes || 0);
+          setDislikes(reactionRes.data.dislikes || 0);
+          if (reactionRes.data.isLiked) setUserReaction('liked');
+          else if (reactionRes.data.isDisliked) setUserReaction('disliked');
+          else setUserReaction(null);
+        }
+
         setError(null);
+
+        // Record view silently
+        try {
+          await videoService.recordView(id);
+        } catch (viewError) {
+          // Ignore view recording errors
+        }
       } catch (err) {
-        toast.error(err?.response?.data?.message || "Failed to load video.")
+        toast.error(err?.response?.data?.message || "Failed to load video.");
         setError(err?.response?.data?.message || "Failed to load video.");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchVideo();
-
+    fetchData();
   }, [id]);
+
+  const handleLike = async () => {
+    if (!user) {
+      toast.error("Please login to react");
+      return;
+    }
+
+    // Optimistic Update
+    const prevReaction = userReaction;
+    const prevLikes = likes;
+    const prevDislikes = dislikes;
+
+    if (userReaction === 'liked') {
+      // Toggle off
+      setUserReaction(null);
+      setLikes(l => l - 1);
+    } else {
+      // Toggle on (and potentially remove dislike)
+      setUserReaction('liked');
+      setLikes(l => l + 1);
+      if (userReaction === 'disliked') {
+        setDislikes(d => d - 1);
+      }
+    }
+
+    try {
+      await videoService.toggleLike(id);
+    } catch (err) {
+      // Rollback
+      setUserReaction(prevReaction);
+      setLikes(prevLikes);
+      setDislikes(prevDislikes);
+      toast.error("Something went wrong");
+    }
+  };
+
+  const handleDislike = async () => {
+    if (!user) {
+      toast.error("Please login to react");
+      return;
+    }
+
+    // Optimistic Update
+    const prevReaction = userReaction;
+    const prevLikes = likes;
+    const prevDislikes = dislikes;
+
+    if (userReaction === 'disliked') {
+      // Toggle off
+      setUserReaction(null);
+      setDislikes(d => d - 1);
+    } else {
+      // Toggle on (and potentially remove like)
+      setUserReaction('disliked');
+      setDislikes(d => d + 1);
+      if (userReaction === 'liked') {
+        setLikes(l => l - 1);
+      }
+    }
+
+    try {
+      await videoService.toggleDislike(id);
+    } catch (err) {
+      // Rollback
+      setUserReaction(prevReaction);
+      setLikes(prevLikes);
+      setDislikes(prevDislikes);
+      toast.error("Something went wrong");
+    }
+  };
 
   if (loading) {
     return (
@@ -112,12 +211,25 @@ function WatchVideoPage() {
 
               {/* Action Buttons */}
               <div className="flex items-center gap-2">
-                <button className="flex items-center gap-2 px-4 py-2 bg-secondary hover:bg-border rounded-full transition-colors">
-                  <ThumbsUp size={20} />
-                  <span className="font-medium">Like</span>
+                <button
+                  onClick={handleLike}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-full transition-colors ${userReaction === 'liked'
+                      ? 'bg-blue-600 text-white hover:bg-blue-700'
+                      : 'bg-secondary hover:bg-border'
+                    }`}
+                >
+                  <ThumbsUp size={20} fill={userReaction === 'liked' ? "currentColor" : "none"} />
+                  <span className="font-medium">{likes > 0 ? likes : 'Like'}</span>
                 </button>
-                <button className="flex items-center gap-2 px-4 py-2 bg-secondary hover:bg-border rounded-full transition-colors">
-                  <ThumbsDown size={20} />
+                <button
+                  onClick={handleDislike}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-full transition-colors ${userReaction === 'disliked'
+                      ? 'bg-red-600 text-white hover:bg-red-700'
+                      : 'bg-secondary hover:bg-border'
+                    }`}
+                >
+                  <ThumbsDown size={20} fill={userReaction === 'disliked' ? "currentColor" : "none"} />
+                  {dislikes > 0 && <span className="font-medium">{dislikes}</span>}
                 </button>
                 <button className="flex items-center gap-2 px-4 py-2 bg-secondary hover:bg-border rounded-full transition-colors">
                   <Share2 size={20} />

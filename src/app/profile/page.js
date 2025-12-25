@@ -4,14 +4,13 @@ import { useState, useRef } from 'react'
 import { PencilIcon, Camera, Eye, EyeOff, Save, X } from 'lucide-react'
 import Navbar from '../../components/Navbar'
 import { useAuth } from '@/app/contexts/Authcontext.js'
-import axiosInstance from '@/utils/axiosInstance'
+import { userService } from '@/api'
 import { toast } from 'react-toastify'
 import Image from 'next/image'
 
 export default function UserProfile() {
   const { user, setUser } = useAuth()
   const [editField, setEditField] = useState(null)
-  const [message, setMessage] = useState('')
 
   const avatarInputRef = useRef(null)
   const coverInputRef = useRef(null)
@@ -48,39 +47,31 @@ export default function UserProfile() {
     formData.append(field, file)
 
     try {
-      const res = await axiosInstance.patch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/users/${field}`,
-        formData,
-        { withCredentials: true }
-      )
-      const updatedUser = { ...localUser, [field]: res.data.data[field] }
+      let res;
+      if (field === 'avatar') {
+        res = await userService.updateAvatar(formData)
+      } else if (field === 'coverImage') {
+        res = await userService.updateCoverImage(formData)
+      }
+      const updatedUser = { ...localUser, [field]: res.data[field] }
       setLocalUser(updatedUser)
       setUser(updatedUser)
       toast.success(`${field} updated successfully`)
-      setMessage(`${field} updated successfully`)
     } catch (err) {
-      console.error(err)
       toast.error(`Failed to update ${field}`)
-      setMessage(`Failed to update ${field}`)
     }
   }
 
   const saveField = async (field) => {
     try {
-      const res = await axiosInstance.patch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/users/update-account`,
-        { [field]: localUser[field] },
-        { withCredentials: true }
-      )
-      const updatedUser = { ...localUser, [field]: res.data.data[field] }
+      const res = await userService.updateAccount({ [field]: localUser[field] })
+      const updatedUser = { ...localUser, [field]: res.data[field] }
       setLocalUser(updatedUser)
       setUser(updatedUser)
       toast.success(`${field} updated successfully`)
-      setMessage(`${field} updated successfully`)
       setEditField(null)
     } catch (err) {
-      console.error(err)
       toast.error(`Failed to update ${field}`)
-      setMessage(`Failed to update ${field}`)
     }
   }
 
@@ -91,15 +82,10 @@ export default function UserProfile() {
     }
 
     try {
-      const res = await axiosInstance.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/users/change-password`,
-        passwords,
-        { withCredentials: true }
-      );
+      await userService.changePassword(passwords);
       toast.success('Password changed successfully');
       setPasswords({ oldPassword: '', newPassword: '', confirmPassword: '' });
     } catch (err) {
-      console.error(err);
       toast.error(err.response?.data?.message || 'Failed to change password');
     }
   };
@@ -116,6 +102,8 @@ export default function UserProfile() {
               <Image
                 src={localUser.coverImage}
                 alt="Cover"
+                width={1000}
+                height={1000}
                 className="w-full h-full object-cover"
               />
             )}
@@ -142,6 +130,8 @@ export default function UserProfile() {
                   <Image
                     src={localUser.avatar || '/default-avatar.png'}
                     alt="Profile"
+                    width={1000}
+                    height={1000}
                     className="w-full h-full object-cover"
                   />
                 </div>

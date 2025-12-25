@@ -4,43 +4,46 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import { useQuery } from '@tanstack/react-query';
-import axiosInstance from '@/utils/axiosInstance';
+import { subscriptionService } from '@/api';
 import { Bell, BellOff, Users } from 'lucide-react';
 import { toast } from 'react-toastify';
 import Loader from '@/components/Loader';
 import withAuth from '@/utils/withAuth';
 import Image from 'next/image';
 
+
 function SubscriptionsPage() {
     const router = useRouter();
     const [page, setPage] = useState(1);
     const [allSubscriptions, setAllSubscriptions] = useState([]);
+    const [subscriptionStatus, setSubscriptionStatus] = useState(false);
 
     // Fetch subscriptions with React Query
     const { data, isLoading, error, isFetching } = useQuery({
         queryKey: ['subscriptions', page],
         queryFn: async () => {
-            const res = await axiosInstance.get(`/api/v1/users/get-subscriptions?page=${page}&limit=12`, {
-                withCredentials: true
-            });
-            return res.data.data;
+            const res = await subscriptionService.getSubscriptions(page, 12);
+            return res.data;
         },
         staleTime: 5 * 60 * 1000, // 5 minutes
     });
 
+    // Fetch subscription status
+
+
     // Accumulate subscriptions when new page data arrives
     useEffect(() => {
-        if (data?.docs) {
+        if (data) {
             setAllSubscriptions(prev => {
-                if (page === 1) return data.docs;
+                if (page === 1) return data;
                 const existingIds = new Set(prev.map(s => s._id));
-                const newSubs = data.docs.filter(s => !existingIds.has(s._id));
+                const newSubs = data.filter(s => !existingIds.has(s._id));
                 return [...prev, ...newSubs];
             });
         }
     }, [data, page]);
 
-    const hasNextPage = data?.hasNextPage || false;
+    const hasNextPage = data?.message?.hasNextPage || false;
 
     const handleChannelClick = (username) => {
         router.push(`/Channel/${username}`);
@@ -81,60 +84,55 @@ function SubscriptionsPage() {
 
                 {/* Subscriptions Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                    {allSubscriptions.map((channel) => (
-                        <div
-                            key={channel._id}
-                            onClick={() => handleChannelClick(channel.username)}
-                            className="group cursor-pointer"
-                        >
-                            <div className="bg-secondary/50 border border-border rounded-xl p-6 hover:bg-secondary transition-all hover:border-blue-500/50 hover:shadow-lg hover:shadow-blue-500/10">
-                                {/* Avatar */}
-                                <div className="flex justify-center mb-4">
-                                    <div className="relative w-24 h-24 rounded-full overflow-hidden border-4 border-border group-hover:border-blue-500 transition-colors">
-                                        {channel.avatar ? (
-                                            <Image
-                                                src={channel.avatar}
-                                                alt={channel.fullName}
-                                                className="w-full h-full object-cover"
-                                                width={96}
-                                                height={96}
-                                            />
-                                        ) : (
-                                            <div className="w-full h-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-white text-2xl font-bold">
-                                                {channel.fullName?.[0]?.toUpperCase() || 'U'}
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-
-                                {/* Channel Info */}
-                                <div className="text-center">
-                                    <h3 className="font-semibold text-lg text-white mb-1 truncate group-hover:text-blue-400 transition-colors">
-                                        {channel.fullName}
-                                    </h3>
-                                    <p className="text-sm text-gray-400 mb-3 truncate">
-                                        @{channel.username}
-                                    </p>
-
-                                    {/* Subscriber Count */}
-                                    {channel.subscribersCount !== undefined && (
-                                        <div className="flex items-center justify-center gap-1 text-xs text-gray-500">
-                                            <Users size={14} />
-                                            <span>{channel.subscribersCount} subscribers</span>
+                    {allSubscriptions.map((subscription) => {
+                        const channel = subscription.channel;
+                        return (
+                            <div
+                                key={subscription._id}
+                                onClick={() => handleChannelClick(channel.username)}
+                                className="group cursor-pointer"
+                            >
+                                <div className="bg-secondary/50 border border-border rounded-xl p-6 hover:bg-secondary transition-all hover:border-blue-500/50 hover:shadow-lg hover:shadow-blue-500/10">
+                                    {/* Avatar */}
+                                    <div className="flex justify-center mb-4">
+                                        <div className="relative w-24 h-24 rounded-full overflow-hidden border-4 border-border group-hover:border-blue-500 transition-colors">
+                                            {channel.avatar ? (
+                                                <Image
+                                                    src={channel.avatar}
+                                                    alt={channel.username}
+                                                    className="w-full h-full object-cover"
+                                                    width={96}
+                                                    height={96}
+                                                />
+                                            ) : (
+                                                <div className="w-full h-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-white text-2xl font-bold">
+                                                    {channel.username?.[0]?.toUpperCase() || 'U'}
+                                                </div>
+                                            )}
                                         </div>
-                                    )}
-                                </div>
+                                    </div>
 
-                                {/* Subscribed Badge */}
-                                <div className="mt-4 flex justify-center">
-                                    <div className="flex items-center gap-1 text-xs font-medium text-green-400 bg-green-500/10 px-3 py-1 rounded-full">
-                                        <Bell size={12} />
-                                        <span>Subscribed</span>
+                                    {/* Channel Info */}
+                                    <div className="text-center">
+                                        <h3 className="font-semibold text-lg text-white mb-1 truncate group-hover:text-blue-400 transition-colors">
+                                            @{channel.username}
+                                        </h3>
+                                        <p className="text-sm text-gray-400 mb-3">
+                                            Channel ID: {channel._id.slice(-8)}
+                                        </p>
+                                    </div>
+
+                                    {/* Subscribed Badge */}
+                                    <div className="mt-4 flex justify-center">
+                                        <div className="flex items-center gap-1 text-xs font-medium text-green-400 bg-green-500/10 px-3 py-1 rounded-full">
+                                            <Bell size={12} />
+                                            <span>Subscribed</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
 
                 {/* Empty State */}

@@ -169,7 +169,7 @@ function UploadVideoPage() {
               onClick={() => document.getElementById('thumbnail-upload').click()}
             >
               {thumbnailPreviewUrl ? (
-                <Image src={thumbnailPreviewUrl} alt="Thumbnail" className="w-full h-full object-cover" />
+                <Image src={thumbnailPreviewUrl} alt="Thumbnail" width={96} height={96} className="w-full h-full object-cover" />
               ) : (
                 <div className="text-center p-4">
                   <ImageIcon className="text-gray-400 mx-auto mb-2" size={24} />

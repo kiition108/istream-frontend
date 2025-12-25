@@ -19,7 +19,7 @@ export default function VideoComment({ videoId }) {
       const data = await videoService.getComments(videoId);
       setComments(data.data || []);
     } catch (error) {
-      console.error("Failed to fetch comments", error);
+      // Silently fail
     } finally {
       setLoading(false);
     }
@@ -41,7 +41,6 @@ export default function VideoComment({ videoId }) {
       setText('');
       toast.success(data.message || "Comment posted successfully");
     } catch (error) {
-      console.error("Failed to post comment", error);
       toast.error(error.response?.data?.message || "Failed to post comment");
     }
   };
@@ -137,6 +136,8 @@ export default function VideoComment({ videoId }) {
                       {comment?.user?.avatar ? (
                         <Image
                           src={comment.user.avatar}
+                          width={40}
+                          height={40}
                           className="w-full h-full object-cover"
                           alt={comment?.user?.username || 'User'}
                         />

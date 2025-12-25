@@ -34,8 +34,7 @@ function EditVideoPage() {
         setTitle(video.title);
         setDescription(video.description);
         setIsPublished(video.isPublished);
-      } catch (err) { 
-        console.error(err);
+      } catch (err) {
         setError('Failed to fetch video data');
       }
     };
@@ -67,7 +66,6 @@ function EditVideoPage() {
 
       router.push('/home');
     } catch (err) {
-      console.error(err);
       setError('Failed to update video');
     } finally {
       setLoading(false);

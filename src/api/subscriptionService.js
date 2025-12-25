@@ -3,7 +3,7 @@ import axiosInstance from '@/utils/axiosInstance';
 const subscriptionService = {
     // Get user's subscriptions
     getSubscriptions: async (page = 1, limit = 12) => {
-        const response = await axiosInstance.get(`/api/v1/users/get-subscriptions?page=${page}&limit=${limit}`, {
+        const response = await axiosInstance.get(`/api/v1/subscriptions?page=${page}&limit=${limit}`, {
             withCredentials: true
         });
         return response.data;
