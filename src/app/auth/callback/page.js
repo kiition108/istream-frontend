@@ -1,21 +1,33 @@
 'use client'
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'react-toastify';
 import authStorage from '@/utils/authStorage';
+import { userService } from '@/api';
+import { useAuth } from '@/app/contexts/Authcontext';
 import Loader from '@/components/Loader';
 
 export default function AuthCallback() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const [status, setStatus] = useState('processing'); // processing, success, error
+    const { setUser } = useAuth();
+    const [status, setStatus] = useState('processing');
+    const hasRun = useRef(false); // Prevent multiple executions
 
     useEffect(() => {
+        // Prevent running multiple times
+        if (hasRun.current) {
+            return;
+        }
+
         const handleCallback = async () => {
+            hasRun.current = true; // Mark as run immediately
+
             try {
-                const accessToken = searchParams.get('accessToken');
-                const refreshToken = searchParams.get('refreshToken');
+                // Check for tokens in URL query parameters (some OAuth flows)
+                const accessTokenFromUrl = searchParams.get('accessToken');
+                const refreshTokenFromUrl = searchParams.get('refreshToken');
                 const error = searchParams.get('error');
 
                 if (error) {
@@ -25,50 +37,49 @@ export default function AuthCallback() {
                     return;
                 }
 
-                if (!accessToken) {
-                    setStatus('error');
-                    toast.error('No access token received');
-                    setTimeout(() => router.push('/login'), 2000);
-                    return;
+                // Store tokens from URL if provided
+                if (accessTokenFromUrl) {
+                    authStorage.setToken(accessTokenFromUrl);
+                    if (refreshTokenFromUrl) {
+                        localStorage.setItem('refreshToken', refreshTokenFromUrl);
+                    }
                 }
 
-                // Store tokens
-                authStorage.setToken(accessToken);
-                if (refreshToken) {
-                    localStorage.setItem('refreshToken', refreshToken);
-                }
-
-                // Decode JWT to get user data (without verification - server already verified)
+                // Now fetch user data from the API
+                // If tokens are in cookies, axiosInstance will send them automatically
                 try {
-                    const base64Url = accessToken.split('.')[1];
-                    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-                    const jsonPayload = decodeURIComponent(
-                        atob(base64)
-                            .split('')
-                            .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-                            .join('')
-                    );
+                    const response = await userService.getCurrentUser();
 
-                    const userData = JSON.parse(jsonPayload);
+                    if (response.success || response.statusCode === 200) {
+                        // Store user data in localStorage
+                        authStorage.setUser(response.data);
 
-                    // Store user data
-                    authStorage.setUser({
-                        _id: userData._id,
-                        email: userData.email,
-                        username: userData.username,
-                        fullName: userData.fullName,
-                    });
+                        // Update AuthContext state immediately
+                        setUser(response.data);
 
-                    setStatus('success');
-                    toast.success('Successfully signed in with Google!');
+                        // If we got a response, extract tokens from it if provided
+                        if (response.data?.accessToken) {
+                            authStorage.setToken(response.data.accessToken);
+                        }
 
-                    // Redirect to home - using replace to trigger AuthContext refresh
-                    setTimeout(() => {
-                        window.location.href = '/';
-                    }, 500);
-                } catch (decodeError) {
+                        setStatus('success');
+                        toast.success('Successfully signed in with Google!');
+
+                        // Use Next.js router for navigation
+                        setTimeout(() => {
+                            router.push('/');
+                        }, 500);
+                    } else {
+                        throw new Error('Failed to fetch user data');
+                    }
+                } catch (fetchError) {
                     setStatus('error');
-                    toast.error('Failed to process authentication');
+                    toast.error('Failed to complete authentication');
+
+                    // Clean up tokens on failure
+                    authStorage.removeToken();
+                    authStorage.removeUser();
+
                     setTimeout(() => router.push('/login'), 2000);
                 }
             } catch (err) {
@@ -79,7 +90,8 @@ export default function AuthCallback() {
         };
 
         handleCallback();
-    }, [searchParams, router]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // Empty deps - only run once on mount
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-900 via-blue-900 to-black">
@@ -109,3 +121,4 @@ export default function AuthCallback() {
         </div>
     );
 }
+

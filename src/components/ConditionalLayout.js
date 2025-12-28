@@ -34,7 +34,7 @@ export default function ConditionalLayout({ children }) {
                 {/* Main Content Area */}
                 <main
                     className={`flex-1 ${!shouldExcludeLayout
-                        ? `p-4 transition-all duration-200 ${isSidebarOpen ? 'md:ml-60' : 'md:ml-18'
+                        ? `p-4 transition-all duration-200 ${isSidebarOpen ? 'md:ml-60' : 'md:ml-[4.5rem]'
                         }`
                         : ''
                         }`}

@@ -45,7 +45,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
     // Mini Sidebar (when collapsed)
     if (!isOpen) {
         return (
-            <aside className="fixed left-0 top-14 w-18 h-[calc(100vh-3.5rem)] bg-background flex flex-col items-center py-4 gap-6 hidden md:flex z-40">
+            <aside className="fixed left-0 top-14 w-[4.5rem] h-[calc(100vh-3.5rem)] bg-background flex flex-col items-center py-4 gap-6 hidden md:flex z-40">
                 {menuItems.map((item) => (
                     <Link
                         key={item.label}

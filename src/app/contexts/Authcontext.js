@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import authStorage from '@/utils/authStorage'
 import { userService } from '@/api'
@@ -76,8 +76,15 @@ export function AuthProvider({ children }) {
     }
   }
 
+  // Method to set user directly (used by OAuth callback)
+  // Wrapped in useCallback to prevent recreation on every render
+  const setUserDirectly = useCallback((userData) => {
+    setUser(userData);
+    authStorage.setUser(userData);
+  }, [])
+
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, loading, setUser, logout }}>
+    <AuthContext.Provider value={{ user, isAuthenticated, loading, setUser: setUserDirectly, logout }}>
       {loading ? <Loader fullScreen /> : children}
     </AuthContext.Provider>
   )

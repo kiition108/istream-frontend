@@ -193,13 +193,13 @@ export default function VideoApprovalPage() {
         )}
 
         {/* Videos Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           {allVideos.map((video) => (
             <div
               key={video._id}
               className={`group flex flex-col rounded-xl overflow-hidden border transition-all hover:shadow-lg ${video.isApproved
-                  ? 'border-green-500/30 bg-green-500/5'
-                  : 'border-yellow-500/50 bg-yellow-500/5'
+                ? 'border-green-500/30 bg-green-500/5'
+                : 'border-yellow-500/50 bg-yellow-500/5'
                 }`}
             >
               {/* Thumbnail with VideoThumbnail component */}
@@ -257,8 +257,8 @@ export default function VideoApprovalPage() {
                   }}
                   disabled={approvalMutation.isLoading}
                   className={`w-full py-2.5 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all ${video.isApproved
-                      ? 'bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20 border border-yellow-500/30'
-                      : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg'
+                    ? 'bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20 border border-yellow-500/30'
+                    : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg'
                     } disabled:opacity-50 disabled:cursor-not-allowed`}
                 >
                   {video.isApproved ? (

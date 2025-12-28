@@ -52,13 +52,23 @@ axiosInstance.interceptors.response.use(
       isRefreshing = true
 
       try {
-        await axiosInstance.post('/api/v1/users/refresh-token')
+        const response = await axiosInstance.post('/api/v1/users/refresh-token')
+
+        // Extract new access token from response if provided
+        if (response.data?.data?.accessToken) {
+          const newAccessToken = response.data.data.accessToken;
+          authStorage.setToken(newAccessToken);
+        }
+
         processQueue(null)
         return axiosInstance({ ...originalRequest })
       } catch (err) {
         processQueue(err, null)
 
+        // Clear auth data on refresh failure
         if (typeof window !== 'undefined') {
+          authStorage.removeToken();
+          authStorage.removeUser();
           window.location.href = '/login'
         }
 
