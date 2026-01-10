@@ -9,6 +9,7 @@ import authStorage from '@/utils/authStorage';
 import { userService } from '@/api';
 import GoogleSignInButton from '@/components/auth/GoogleSignInButton';
 import AuthDivider from '@/components/auth/AuthDivider';
+import { useAuth } from '@/app/contexts/Authcontext';
 
 
 export default function Login() {
@@ -16,6 +17,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
+  const { setUser } = useAuth();
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -40,6 +42,7 @@ export default function Login() {
 
         console.log('Saving user data...'); // Debug log
         authStorage.setUser(userData);
+        setUser(userData); // Update AuthContext immediately
 
         if (token) {
           console.log('Saving token...'); // Debug log
@@ -50,10 +53,12 @@ export default function Login() {
           console.log('Token saved successfully:', !!savedToken); // Debug log
         }
 
+        // Use Next.js router for better mobile compatibility
         // Small delay to ensure storage operations complete
         setTimeout(() => {
-          window.location.href = '/';
-        }, 100);
+          router.push('/');
+          router.refresh(); // Refresh to update auth state
+        }, 150);
       }
     } catch (err) {
       console.error('Login error:', err); // Debug log

@@ -68,6 +68,7 @@ export default function AuthCallback() {
                         // Use Next.js router for navigation
                         setTimeout(() => {
                             router.push('/');
+                            router.refresh(); // Refresh to update auth state
                         }, 500);
                     } else {
                         throw new Error('Failed to fetch user data');
