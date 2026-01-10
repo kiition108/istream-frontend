@@ -7,13 +7,22 @@ const authStorage = {
         if (!isBrowser) return;
 
         // Save to LocalStorage
-        localStorage.setItem('accessToken', token);
+        try {
+            localStorage.setItem('accessToken', token);
+        } catch (error) {
+            console.error('Failed to save token to localStorage:', error);
+        }
 
         // Save to Cookie (Simple implementation, expires in 7 days)
         const date = new Date();
         date.setTime(date.getTime() + (7 * 24 * 60 * 60 * 1000));
         const expires = "; expires=" + date.toUTCString();
-        document.cookie = "accessToken=" + (token || "") + expires + "; path=/; Secure; SameSite=Strict";
+
+        // Only use Secure flag in production (HTTPS). Use Lax instead of Strict for better mobile compatibility
+        const isSecure = window.location.protocol === 'https:';
+        const secureFlag = isSecure ? '; Secure' : '';
+
+        document.cookie = `accessToken=${token || ""}${expires}; path=/${secureFlag}; SameSite=Lax`;
     },
 
     getToken: () => {
@@ -48,7 +57,11 @@ const authStorage = {
 
     setUser: (user) => {
         if (!isBrowser) return;
-        localStorage.setItem('user', JSON.stringify(user));
+        try {
+            localStorage.setItem('user', JSON.stringify(user));
+        } catch (error) {
+            console.error('Failed to save user to localStorage:', error);
+        }
     },
 
     getUser: () => {

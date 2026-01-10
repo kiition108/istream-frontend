@@ -28,7 +28,9 @@ export default function Login() {
     setLoading(true);
 
     try {
+      console.log('Login attempt started...'); // Debug log
       const response = await userService.login({ email: form.email, password: form.password });
+      console.log('Login response:', response); // Debug log
 
       if (response.success || response.statusCode === 200) {
         toast.success(response.message || 'Login successful')
@@ -36,16 +38,26 @@ export default function Login() {
         const userData = response.data.user;
         const token = response.data.accessToken || response.data.token;
 
+        console.log('Saving user data...'); // Debug log
         authStorage.setUser(userData);
 
         if (token) {
+          console.log('Saving token...'); // Debug log
           authStorage.setToken(token);
+
+          // Verify token was saved successfully
+          const savedToken = authStorage.getToken();
+          console.log('Token saved successfully:', !!savedToken); // Debug log
         }
 
-        window.location.href = '/';
+        // Small delay to ensure storage operations complete
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 100);
       }
     } catch (err) {
-      const errorMsg = err.response?.data?.message || 'Login failed';
+      console.error('Login error:', err); // Debug log
+      const errorMsg = err.response?.data?.message || err.message || 'Login failed. Please try again.';
       toast.error(errorMsg)
     } finally {
       setLoading(false);
@@ -93,6 +105,10 @@ export default function Login() {
                   value={form.email}
                   onChange={handleChange}
                   required
+                  autoComplete="email"
+                  inputMode="email"
+                  autoCapitalize="off"
+                  autoCorrect="off"
                   className="w-full pl-10 pr-4 py-3 bg-[#2a2a2a] border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-gray-500 transition-all shadow-inner"
                 />
               </div>
@@ -115,6 +131,7 @@ export default function Login() {
                   value={form.password}
                   onChange={handleChange}
                   required
+                  autoComplete="current-password"
                   className="w-full pl-10 pr-12 py-3 bg-[#2a2a2a] border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-gray-500 transition-all shadow-inner"
                 />
                 <button

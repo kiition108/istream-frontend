@@ -45,6 +45,7 @@ export default function ChannelHeader({ username }) {
           alt="Cover"
           fill
           className="object-cover rounded-t-lg"
+          priority
         />
       </div>
 
