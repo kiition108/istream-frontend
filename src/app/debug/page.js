@@ -85,7 +85,7 @@ export default function DebugPage() {
                     <h2 className="text-xl font-bold mb-2 text-yellow-400">Instructions:</h2>
                     <ol className="list-decimal list-inside space-y-2 text-sm">
                         <li>Take a screenshot of this page on your mobile device</li>
-                        <li>Check if cookieTest and localStorageTest show "Pass"</li>
+                        <li>Check if cookieTest and localStorageTest show &quot;Pass&quot;</li>
                         <li>Check if isSecure matches your environment (should be true for production)</li>
                         <li>Verify cookieEnabled is true</li>
                     </ol>
