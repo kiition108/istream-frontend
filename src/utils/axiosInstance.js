@@ -65,11 +65,19 @@ axiosInstance.interceptors.response.use(
       } catch (err) {
         processQueue(err, null)
 
-        // Clear auth data on refresh failure
-        if (typeof window !== 'undefined') {
+        // Only clear auth and redirect if token refresh explicitly failed with 401/403
+        // Don't clear on network errors or other issues
+        if (typeof window !== 'undefined' && (err.response?.status === 401 || err.response?.status === 403)) {
+          console.log('Token refresh failed - clearing auth');
           authStorage.removeToken();
           authStorage.removeUser();
-          window.location.href = '/login'
+          
+          // Only redirect if not already on login page
+          if (!window.location.pathname.includes('/login')) {
+            window.location.href = '/login'
+          }
+        } else {
+          console.log('Token refresh network error - maintaining credentials');
         }
 
         return Promise.reject(err)
