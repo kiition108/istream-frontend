@@ -40,13 +40,31 @@ export function AuthProvider({ children }) {
       }
 
       // If we have both token and user in storage, use them immediately
+      // This is critical for mobile/incognito where re-fetching might fail
       if (token && storedUser) {
         setUser(storedUser);
         setLoading(false);
-        // Optionally verify in background, but don't block rendering
+        
+        // Background verification (optional) - won't affect UI if it fails
+        setTimeout(async () => {
+          try {
+            const response = await userService.getCurrentUser();
+            if (response.success || response.statusCode === 200) {
+              // Update user data if different
+              if (JSON.stringify(response.data) !== JSON.stringify(storedUser)) {
+                setUser(response.data);
+                authStorage.setUser(response.data);
+              }
+            }
+          } catch (error) {
+            console.log('Background user verification failed (user remains logged in):', error.message);
+            // Silently fail - user is already authenticated with stored credentials
+          }
+        }, 1000);
         return;
       }
 
+      // Only reach here if we have token but no stored user (shouldn't happen normally)
       try {
         const response = await userService.getCurrentUser();
 
@@ -63,12 +81,16 @@ export function AuthProvider({ children }) {
         // Don't clear token on network errors - keep user logged in
         // Only clear if it's an authentication error (401/403)
         if (error.response?.status === 401 || error.response?.status === 403) {
+          console.log('Authentication invalid - clearing credentials');
           setUser(null)
           authStorage.removeUser();
           authStorage.removeToken();
-        } else if (storedUser) {
-          // Network error but we have stored user - keep them logged in
-          setUser(storedUser);
+        } else {
+          // Network error - keep stored credentials if we have them
+          console.log('Network error during auth check - maintaining stored credentials');
+          if (storedUser) {
+            setUser(storedUser);
+          }
         }
       } finally {
         setLoading(false)

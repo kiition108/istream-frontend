@@ -40,21 +40,42 @@ export default function Login() {
 
         console.log('Saving user data...'); // Debug log
         
-        // Save to storage first
+        // Save to storage first - Critical for mobile/incognito
         if (token) {
           console.log('Saving token...'); // Debug log
           authStorage.setToken(token);
-          const savedToken = authStorage.getToken();
+          
+          // Verify token was saved - retry if failed (important for mobile/incognito)
+          let retries = 3;
+          let savedToken = authStorage.getToken();
+          while (!savedToken && retries > 0) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            authStorage.setToken(token);
+            savedToken = authStorage.getToken();
+            retries--;
+          }
           console.log('Token saved successfully:', !!savedToken); // Debug log
+          
+          if (!savedToken) {
+            throw new Error('Failed to save authentication token. Please check browser settings.');
+          }
+        } else {
+          throw new Error('No authentication token received from server.');
         }
+        
         authStorage.setUser(userData);
         
-        // Update context state
+        // Verify user data was saved
+        const savedUser = authStorage.getUser();
+        if (!savedUser) {
+          throw new Error('Failed to save user data. Please check browser settings.');
+        }
+        
+        // Update context state AFTER verifying storage
         setUser(userData);
-
-        // Give time for state to propagate before navigation
-        // This prevents flash of landing page
-        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        // Longer delay for mobile browsers to ensure storage is persisted
+        await new Promise(resolve => setTimeout(resolve, 500));
         
         router.push('/');
       }
