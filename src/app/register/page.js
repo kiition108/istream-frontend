@@ -46,7 +46,11 @@ export default function Register() {
     formData.append('username', form.username);
     formData.append('email', form.email);
     formData.append('password', form.password);
-    formData.append('avatar', form.avatar);
+    
+    // Only append avatar if one is selected
+    if (form.avatar) {
+      formData.append('avatar', form.avatar);
+    }
 
     try {
       const data = await userService.register(formData);
@@ -116,12 +120,12 @@ export default function Register() {
                     id="avatar"
                     accept="image/*"
                     onChange={handleChange}
-                    required
                     className="hidden"
                   />
                 </label>
               </div>
             </div>
+            <p className="text-center text-xs text-gray-400 -mt-2">Optional: Upload your profile picture</p>
 
             {/* Full Name */}
             <div className="space-y-2">

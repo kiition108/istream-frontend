@@ -63,13 +63,11 @@ export default function AuthCallback() {
                         }
 
                         setStatus('success');
-                        toast.success('Successfully signed in with Google!');
 
-                        // Use Next.js router for navigation
-                        setTimeout(() => {
-                            router.push('/');
-                            router.refresh(); // Refresh to update auth state
-                        }, 500);
+                        // Give time for state to propagate before navigation
+                        await new Promise(resolve => setTimeout(resolve, 300));
+                        
+                        router.push('/');
                     } else {
                         throw new Error('Failed to fetch user data');
                     }

@@ -35,30 +35,28 @@ export default function Login() {
       console.log('Login response:', response); // Debug log
 
       if (response.success || response.statusCode === 200) {
-        toast.success(response.message || 'Login successful')
-
         const userData = response.data.user;
         const token = response.data.accessToken || response.data.token;
 
         console.log('Saving user data...'); // Debug log
-        authStorage.setUser(userData);
-        setUser(userData); // Update AuthContext immediately
-
+        
+        // Save to storage first
         if (token) {
           console.log('Saving token...'); // Debug log
           authStorage.setToken(token);
-
-          // Verify token was saved successfully
           const savedToken = authStorage.getToken();
           console.log('Token saved successfully:', !!savedToken); // Debug log
         }
+        authStorage.setUser(userData);
+        
+        // Update context state
+        setUser(userData);
 
-        // Use Next.js router for better mobile compatibility
-        // Small delay to ensure storage operations complete
-        setTimeout(() => {
-          router.push('/');
-          router.refresh(); // Refresh to update auth state
-        }, 150);
+        // Give time for state to propagate before navigation
+        // This prevents flash of landing page
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        router.push('/');
       }
     } catch (err) {
       console.error('Login error:', err); // Debug log
@@ -151,7 +149,7 @@ export default function Login() {
               </div>
             </div>
 
-            {/* Remember Me */}
+            {/* Remember Me & Forgot Password */}
             <div className="flex items-center justify-between">
               <label className="inline-flex items-center cursor-pointer group">
                 <input
@@ -165,6 +163,12 @@ export default function Login() {
                   Remember me
                 </span>
               </label>
+              <Link 
+                href="/forgot-password" 
+                className="text-sm text-blue-500 hover:text-blue-400 font-medium transition-colors"
+              >
+                Forgot Password?
+              </Link>
             </div>
 
             {/* Submit Button */}

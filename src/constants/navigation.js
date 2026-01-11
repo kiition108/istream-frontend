@@ -36,5 +36,7 @@ export const SIDEBAR_LIBRARY_ITEMS = [
 export const LAYOUT_EXCLUDED_ROUTES = [
     '/login',
     '/register',
-    '/auth/callback'
+    '/auth/callback',
+    '/forgot-password',
+    '/reset-password'
 ];

@@ -4,7 +4,6 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { History, Trash2, Clock, X } from 'lucide-react'
-import Navbar from '@/components/Navbar'
 import VideoThumbnail from '@/components/VideoThumbnail'
 import Loader from '@/components/Loader'
 import { historyService } from '@/api'
@@ -95,29 +94,22 @@ export default function HistoryPage() {
 
     if (isLoading && !data) {
         return (
-            <>
-                <Navbar />
-                <div className="flex justify-center items-center min-h-screen">
-                    <Loader />
-                </div>
-            </>
+            <div className="flex justify-center items-center min-h-screen">
+                <Loader />
+            </div>
         )
     }
 
     if (error) {
         return (
-            <>
-                <Navbar />
-                <div className="flex justify-center items-center min-h-[50vh] text-red-500">
-                    Failed to load watch history
-                </div>
-            </>
+            <div className="flex justify-center items-center min-h-[50vh] text-red-500">
+                Failed to load watch history
+            </div>
         )
     }
 
     return (
         <>
-            <Navbar />
             <div className="max-w-7xl mx-auto px-4 md:px-8 py-6">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-8">

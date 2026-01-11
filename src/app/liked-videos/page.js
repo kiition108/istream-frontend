@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import Navbar from '@/components/Navbar';
+
 import VideoCard from '@/components/VideoCard';
 import Loader from '@/components/Loader';
 import { userService } from '@/api';
@@ -45,8 +45,6 @@ function LikedVideosPage() {
 
     return (
         <div className="min-h-screen bg-background">
-            <Navbar />
-
             <div className="max-w-7xl mx-auto px-4 md:px-8 py-6">
                 {/* Header */}
                 <div className="flex items-center gap-3 mb-8">

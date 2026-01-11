@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import { useParams, useRouter } from 'next/navigation'
-import Navbar from '@/components/Navbar'
 import { toast } from 'react-toastify'
 import { useAuth } from '@/app/contexts/Authcontext'
 import Loader from '@/components/Loader'
@@ -148,12 +147,9 @@ export default function ChannelPage() {
 
   if (error) {
     return (
-      <>
-        <Navbar />
-        <div className="flex justify-center items-center min-h-[50vh] text-red-500">
-          Failed to load channel
-        </div>
-      </>
+      <div className="flex justify-center items-center min-h-[50vh] text-red-500">
+        Failed to load channel
+      </div>
     )
   }
 
@@ -161,7 +157,6 @@ export default function ChannelPage() {
 
   return (
     <>
-      <Navbar />
       <div className="w-full">
         {/* Cover Banner */}
         <div className="w-full h-48 md:h-64 relative bg-gradient-to-br from-purple-600 via-pink-600 to-blue-600">

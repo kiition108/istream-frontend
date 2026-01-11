@@ -72,6 +72,18 @@ const userService = {
     getLikedVideos: async (page = 1, limit = 9) => {
         const response = await axiosInstance.get(`/api/v1/users/liked-videos?page=${page}&limit=${limit}`);
         return response.data;
+    },
+
+    // Forgot Password
+    forgotPassword: async (data) => {
+        const response = await axiosInstance.post('/api/v1/users/forgot-password', data);
+        return response.data;
+    },
+
+    // Reset Password
+    resetPassword: async (data) => {
+        const response = await axiosInstance.post('/api/v1/users/reset-password', data);
+        return response.data;
     }
 };
 
