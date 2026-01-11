@@ -31,9 +31,19 @@ export function AuthProvider({ children }) {
 
       // Optimization: Check if we have a token first
       const token = authStorage.getToken();
+      const storedUser = authStorage.getUser();
+      
       if (!token) {
         setLoading(false);
         setUser(null);
+        return;
+      }
+
+      // If we have both token and user in storage, use them immediately
+      if (token && storedUser) {
+        setUser(storedUser);
+        setLoading(false);
+        // Optionally verify in background, but don't block rendering
         return;
       }
 
@@ -49,9 +59,17 @@ export function AuthProvider({ children }) {
           authStorage.removeToken();
         }
       } catch (error) {
-        setUser(null)
-        authStorage.removeUser();
-        authStorage.removeToken();
+        console.error('Auth check failed:', error);
+        // Don't clear token on network errors - keep user logged in
+        // Only clear if it's an authentication error (401/403)
+        if (error.response?.status === 401 || error.response?.status === 403) {
+          setUser(null)
+          authStorage.removeUser();
+          authStorage.removeToken();
+        } else if (storedUser) {
+          // Network error but we have stored user - keep them logged in
+          setUser(storedUser);
+        }
       } finally {
         setLoading(false)
       }
