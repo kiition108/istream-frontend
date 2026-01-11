@@ -192,7 +192,7 @@ export default function ResetPassword() {
 
           {/* Footer */}
           <div className="text-center text-sm text-gray-400">
-            Didn't receive OTP?{' '}
+            Didn&apos;t receive OTP?{' '}
             <Link href="/forgot-password" className="text-blue-500 hover:text-blue-400 font-medium transition-colors">
               Resend
             </Link>
